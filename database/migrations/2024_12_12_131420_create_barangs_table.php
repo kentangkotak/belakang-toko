@@ -15,11 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('kodebarang');
             $table->string('namabarang');
+            $table->string('merk');
             $table->string('satuan_b');
             $table->string('satuan_k');
-            $table->decimal('isi');
+            $table->integer('isi');
             $table->string('kategori');
-
+            $table->decimal('hargajual1', 12, 2)->nullable();
+            $table->decimal('hargajual2', 12, 2)->nullable();
+            $table->string('ukuran');
             $table->timestamps();
         });
     }
