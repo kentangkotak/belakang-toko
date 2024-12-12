@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('barangs', function (Blueprint $table) {
             $table->id();
-            $table->string('kodebarang');
-            $table->string('namabarang');
-            $table->string('merk');
-            $table->string('satuan_b');
-            $table->string('satuan_k');
-            $table->integer('isi');
-            $table->string('kategori');
-            $table->decimal('hargajual1', 12, 2)->nullable();
-            $table->decimal('hargajual2', 12, 2)->nullable();
-            $table->string('ukuran');
+            $table->string('kodebarang')->unique();
+            $table->string('namabarang')->nullable();
+            $table->string('merk')->nullable();
+            $table->string('satuan_b')->nullable();
+            $table->string('satuan_k')->nullable();
+            $table->integer('isi')->default(1);
+            $table->string('kategori')->nullable();
+            $table->decimal('hargajual1', 12, 2)->default(0);
+            $table->decimal('hargajual2', 12, 2)->default(0);
+            $table->string('ukuran')->nullable();
             $table->timestamps();
         });
     }
