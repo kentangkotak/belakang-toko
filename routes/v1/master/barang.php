@@ -1,0 +1,13 @@
+<?php
+
+use App\Http\Controllers\Api\Master\BarangController;
+use Illuminate\Support\Facades\Route;
+
+Route::group([
+    //'middleware' => 'auth:api',
+    'prefix' => 'master/barang'
+], function () {
+    Route::get('/listbarang', [BarangController::class, 'listbarang']);
+});
+
+// Route::get('/listbarang', [BarangController::class, 'listbarang']);

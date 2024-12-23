@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Helpers\Routes\RouteHelper;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+// Route::get('/listbarang', [BarangController::class, 'listbarang']);
+
+Route::prefix('v1')->group(function () {
+    RouteHelper::includeRouteFiles(__DIR__ . '/v1');
 });
