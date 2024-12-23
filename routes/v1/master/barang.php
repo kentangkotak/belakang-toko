@@ -8,6 +8,5 @@ Route::group([
     'prefix' => 'master/barang'
 ], function () {
     Route::get('/listbarang', [BarangController::class, 'listbarang']);
+    Route::post('/simpanbarang', [BarangController::class, 'simpanbarang']);
 });
-
-// Route::get('/listbarang', [BarangController::class, 'listbarang']);
