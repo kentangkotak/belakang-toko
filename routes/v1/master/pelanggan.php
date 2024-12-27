@@ -8,5 +8,5 @@ Route::group([
 ], function () {
     Route::get('/listpelanggan', [PelangganController::class, 'listpelanggan']);
     Route::post('/simpan', [PelangganController::class, 'simpan']);
-    Route::post('/hapus', [PelangganController::class, 'simphapusan']);
+    Route::post('/hapus', [PelangganController::class, 'hapus']);
 });
