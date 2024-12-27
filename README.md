@@ -16,7 +16,7 @@ Anda harus menginstal docker di komputer. [docker-compose](https://docs.docker.c
 
 ## Step 1: Copy files in your directory
 
-Kami berasumsi bahwa Anda menambahkan ini ke proyek yang sudah ada, karena sejak Laravel 8 docker disertakan secara default.
+Kami berasumsi bahwa Anda menambahkan ini ke proyek yang sudah ada, karena sejak Laravel 10 docker disertakan secara default.
 
 Salin semua file kecuali `.env` dan `readme.md` di folder proyek Anda saat ini. Timpa kredensial dari .env Anda secara lokal dengan kredensial yang disediakan di sini. Jika Anda tidak ingin menimpa nama dan pengguna basis data, silakan sesuaikan file di docker-compose/mysql/init/01-databaes.sql sesuai dengan kebutuhan Anda.
 
