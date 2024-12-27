@@ -2,7 +2,7 @@
 
 CARA MENJALANKANNYA 
 
-## Table of Contents
+## Daftar Isi
 
 - [Setup](#setup)
     - [1. Copy files](#step-1-copy-files-in-your-directory)
@@ -12,40 +12,42 @@ CARA MENJALANKANNYA
 
 # Setup
 
-Its required that one has [docker-compose](https://docs.docker.com/compose/install/) on the machine installed.
+Anda harus menginstal docker di komputer. [docker-compose](https://docs.docker.com/compose/install/).
 
 ## Step 1: Copy files in your directory
 
-We assume that you add this to an existing project, as since Laravel 8 docker ships in by default.
+Kami berasumsi bahwa Anda menambahkan ini ke proyek yang sudah ada, karena sejak Laravel 8 docker disertakan secara default.
+
+Salin semua file kecuali `.env` dan `readme.md` di folder proyek Anda saat ini. Timpa kredensial dari .env Anda secara lokal dengan kredensial yang disediakan di sini. Jika Anda tidak ingin menimpa nama dan pengguna basis data, silakan sesuaikan file di docker-compose/mysql/init/01-databaes.sql sesuai dengan kebutuhan Anda.
 
 Copy all files except `.env` and `readme.md` in your current project folder. Overwrite the credentions from your `.env` locally with those provided here. If you dont want to overwrite database name and user, then please adjust the file in `docker-compose/mysql/init/01-databaes.sql` according to your needs.
 
 ## Step 2: Execute docker
 
-Run container
+Jalankan container
 
   ```sh
   docker-compose up -d --build
   ```
 
-this may take a moment. After the container has been setup, check the status with
+Ini mungkin memerlukan waktu beberapa saat. Setelah container disiapkan, periksa status dengan ...
 
   ```sh
   docker-compose ps
   ```
 
-you should see three containers are running.
+Anda akan melihat tiga container sedang berjalan.
 
 
 ## Step 3: Install Composer dependencies
 
-Bash into your container:
+Bash ke dalam kontainer Anda:
 
   ```sh
   docker-compose exec app bash
   ```
 
-Install composer dependencies (this may also take a moment):
+Instal dependensi composer (ini mungkin memerlukan waktu beberapa saat):
 
   ```sh
   composer install
@@ -57,11 +59,11 @@ and finally generate a key
   php artisan key:generate
   ```
 
-:tada: Congratulations. Your app should now be accessible under `localhost:8005`
+:tada: Selamat. Aplikasi Anda sekarang dapat diakses di `localhost:8182`
 
 # Enhancements
 
-I like to use the following aliases to avoid going into the container every time:
+Saya suka menggunakan alias berikut untuk menghindari masuk ke
 
   ```
   alias phpunit="docker-compose exec app vendor/bin/phpunit"
@@ -69,14 +71,13 @@ I like to use the following aliases to avoid going into the container every time
   alias composer="docker-compose exec app composer"
   ```
 
-Also, if you want to keep you laravel docker container
-running after a restart of your computer, you may add
+Selain itu, jika Anda ingin agar kontainer laravel docker Anda tetap berjalan setelah komputer Anda dihidupkan ulang, Anda dapat menambahkan
 
   ```
   restart: unless-stopped
   ```
 
-to each of your services (app,db,nginx).
+ke setiap layanan Anda (app,db,nginx).
 
 
 
