@@ -12,6 +12,8 @@ services:
         restart: unless-stopped
         environment:
             - COMPOSER_MEMORY_LIMIT=-1
+        links:
+            - db
         depends_on:
             - db
         volumes:
@@ -32,6 +34,8 @@ services:
             MYSQL_USER: ${DB_USERNAME}
             MYSQL_PASSWORD: ${DB_PASSWORD}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
         volumes:
             - db_data:/var/lib/mysql
         networks:
@@ -43,6 +47,12 @@ services:
         image: nginx:alpine
         container_name: nginx_tokobangunan
         restart: unless-stopped
+        tty: true
+        links:
+            - app
+        depends_on:
+            - db
+            - app
         ports:
             - "8182:80"
         volumes:
@@ -62,4 +72,3 @@ networks:
 volumes:
     db_data:
         driver: local
-        name: tokobangunan_db_data
