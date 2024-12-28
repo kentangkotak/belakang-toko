@@ -21,3 +21,7 @@ Route::get('/autogen', function () {
     $data = DB::table('barangs')->get();
     return response()->json($data);
 });
+
+Route::get('/autogenx', function () {
+    return 'wew';
+});

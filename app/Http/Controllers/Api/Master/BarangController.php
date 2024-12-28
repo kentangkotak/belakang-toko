@@ -16,7 +16,7 @@ class BarangController extends Controller
         ->when(request('q') !== '' || request('q') !== null, function($x){
             $x->where('namabarang', 'like', '%' . request('q') . '%')
               ->orWhere('kodebarang','like', '%' . request('q') . '%');
-        })->paginate('per_page');
+        })->cursorPaginate(request('per_page'));
         return new JsonResponse($data);
     }
 
@@ -37,6 +37,8 @@ class BarangController extends Controller
             [
                 'namabarang' => $request->namabarang,
                 'merk' => $request->merk,
+                'brand' => $request->brand,
+                'seri' => $request->seri,
                 'satuan_b' => $request->satuan_b,
                 'satuan_k' => $request->satuan_k,
                 'isi' => $request->isi,
