@@ -13,7 +13,7 @@ class MenuController extends Controller
 {
     public function list()
     {
-        $data = AdminMenu::with('subs')->newest('urut')->get();
+        $data = AdminMenu::with('subs')->oldest('urut')->get();
 
         return new JsonResponse($data);
     }
