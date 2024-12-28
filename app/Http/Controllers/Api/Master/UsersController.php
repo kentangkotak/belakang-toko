@@ -10,65 +10,75 @@ use Illuminate\Support\Facades\Validator;
 
 class UsersController extends Controller
 {
+    public function get_user()
+    {
+        $data = User::select('nama', 'username', 'email', 'jabatan', 'nohp', 'alamat')
+        ->when(request('q') !== '' || request('q') !== null, function($x){
+            $x->where('nama', 'like', '%' . request('q') . '%')
+              ->orWhere('username','like', '%' . request('q') . '%')
+              ->orWhere('jabatan','like', '%' . request('q') . '%');
+        })->cursorPaginate(request('per_page'));
+        return new JsonResponse($data);
+    }
     public function save_user(Request $request)
-{
-    $id = $request->input('id');
+    {
+        $id = $request->input('id');
 
-    // Cek apakah ID pengguna ada
-    $user = User::find($id);
-    if (!$user && !$request->input('id')) {
-        // Pengguna tidak ditemukan, buat baru
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required',
-            'email' => 'required|email|unique:users',
-            'username' => 'required|unique:users',
-            'password' => 'required',
-        ]);
-    } else {
-        // Pengguna ditemukan, update
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'username' => 'required|unique:users,username,' . $id,
-            'password' => 'required',
-        ]);
+        // Cek apakah ID pengguna ada
+        $user = User::find($id);
+        if (!$user && !$request->input('id')) {
+            // Pengguna tidak ditemukan, buat baru
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'email' => 'required|email|unique:users',
+                'username' => 'required|unique:users',
+                'password' => 'required',
+            ]);
+        } else {
+            // Pengguna ditemukan, update
+            $validator = Validator::make($request->all(), [
+                'nama' => 'required',
+                'email' => 'required|email|unique:users,email,' . $id,
+                'username' => 'required|unique:users,username,' . $id,
+                'password' => 'required',
+            ]);
+        }
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        // Simpan atau update pengguna
+        if ($user) {
+            $user->update([
+                'email' => $request->email,
+                'nama' => $request->nama,
+                'password' => bcrypt($request->password),
+                'jabatan' => $request->jabatan,
+                'nohp' => $request->nohp,
+                'alamat' => $request->alamat,
+            ]);
+        } else {
+            $user = User::create([
+                'username' => $request->username,
+                'email' => $request->email,
+                'nama' => $request->nama,
+                'password' => bcrypt($request->password),
+                'jabatan' => $request->jabatan,
+                'nohp' => $request->nohp,
+                'alamat' => $request->alamat,
+            ]);
+        }
+
+        if (!$user) {
+            return response()->json(['message' => 'Maaf, Data User Gagal Disimpan!'], 500);
+        }
+
+        return response()->json([
+            'message' => 'Data Berhasil Disimpan...!',
+            'result' => $user
+        ], 200);
     }
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
-    }
-
-    // Simpan atau update pengguna
-    if ($user) {
-        $user->update([
-            'email' => $request->email,
-            'nama' => $request->nama,
-            'password' => bcrypt($request->password),
-            'jabatan' => $request->jabatan,
-            'nohp' => $request->nohp,
-            'alamat' => $request->alamat,
-        ]);
-    } else {
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'nama' => $request->nama,
-            'password' => bcrypt($request->password),
-            'jabatan' => $request->jabatan,
-            'nohp' => $request->nohp,
-            'alamat' => $request->alamat,
-        ]);
-    }
-
-    if (!$user) {
-        return response()->json(['message' => 'Maaf, Data User Gagal Disimpan!'], 500);
-    }
-
-    return response()->json([
-        'message' => 'Data Berhasil Disimpan...!',
-        'result' => $user
-    ], 200);
-}
 
 
     public function remove_user(Request $request)
