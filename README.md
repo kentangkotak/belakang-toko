@@ -1,66 +1,83 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# About
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+CARA MENJALANKANNYA 
 
-## About Laravel
+## Daftar Isi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Setup](#setup)
+    - [1. Copy files](#step-1-copy-files-in-your-directory)
+    - [2. Execute Docker](#step-2-execute-docker)
+    - [3. Run Composer](#step-3-install-composer-dependencies)
+- [Enhancements](#enhancements)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Anda harus menginstal docker di komputer. [docker-compose](https://docs.docker.com/compose/install/).
 
-## Learning Laravel
+## Step 1: Copy files in your directory
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Kami berasumsi bahwa Anda menambahkan ini ke proyek yang sudah ada, karena sejak Laravel 10 docker disertakan secara default.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Salin semua file kecuali `.env` dan `readme.md` di folder proyek Anda saat ini. Timpa kredensial dari .env Anda secara lokal dengan kredensial yang disediakan di sini. Jika Anda tidak ingin menimpa nama dan pengguna basis data, silakan sesuaikan file di docker-compose/mysql/init/01-databaes.sql sesuai dengan kebutuhan Anda.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Copy all files except `.env` and `readme.md` in your current project folder. Overwrite the credentions from your `.env` locally with those provided here. If you dont want to overwrite database name and user, then please adjust the file in `docker-compose/mysql/init/01-databaes.sql` according to your needs.
 
-## Laravel Sponsors
+## Step 2: Execute docker
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Jalankan container
 
-### Premium Partners
+  ```sh
+  docker-compose up -d --build
+  ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+Ini mungkin memerlukan waktu beberapa saat. Setelah container disiapkan, periksa status dengan ...
 
-## Contributing
+  ```sh
+  docker-compose ps
+  ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Anda akan melihat tiga container sedang berjalan.
 
-## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Step 3: Install Composer dependencies
 
-## Security Vulnerabilities
+Bash ke dalam kontainer Anda:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+  ```sh
+  docker-compose exec app bash
+  ```
 
-## License
+Instal dependensi composer (ini mungkin memerlukan waktu beberapa saat):
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+  ```sh
+  composer install
+  ```
+
+and finally generate a key
+
+  ```sh
+  php artisan key:generate
+  ```
+
+:tada: Selamat. Aplikasi Anda sekarang dapat diakses di `localhost:8182`
+
+# Enhancements
+
+Saya suka menggunakan alias berikut untuk menghindari masuk ke
+
+  ```
+  alias phpunit="docker-compose exec app vendor/bin/phpunit"
+  alias artisan="docker-compose exec app php artisan"
+  alias composer="docker-compose exec app composer"
+  ```
+
+Selain itu, jika Anda ingin agar kontainer laravel docker Anda tetap berjalan setelah komputer Anda dihidupkan ulang, Anda dapat menambahkan
+
+  ```
+  restart: unless-stopped
+  ```
+
+ke setiap layanan Anda (app,db,nginx).
+
+
+
