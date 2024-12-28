@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group([
     //'middleware' => 'auth:api',
-    'prefix' => 'master/pelanggan'
+    'prefix' => 'master/suplier'
 ], function () {
     Route::get('/list', [SupplierController::class, 'list']);
     Route::post('/simpan', [SupplierController::class, 'simpan']);
