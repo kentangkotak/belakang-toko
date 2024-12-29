@@ -12,12 +12,14 @@ class UsersController extends Controller
 {
     public function get_user()
     {
-        $data = User::select('nama', 'username', 'email', 'jabatan', 'nohp', 'alamat')
+        $data = User::select('id','nama', 'username', 'email', 'jabatan', 'nohp', 'alamat')
         ->when(request('q') !== '' || request('q') !== null, function($x){
             $x->where('nama', 'like', '%' . request('q') . '%')
               ->orWhere('username','like', '%' . request('q') . '%')
               ->orWhere('jabatan','like', '%' . request('q') . '%');
-        })->cursorPaginate(request('per_page'));
+        })
+        ->orderBy('id', 'desc')
+        ->simplePaginate(request('per_page'));
         return new JsonResponse($data);
     }
     public function save_user(Request $request)

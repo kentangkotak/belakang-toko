@@ -15,7 +15,9 @@ class SatuanController extends Controller
         $data = Satuan::whereNull('flaging')
         ->when(request('q') !== '' || request('q') !== null, function($x){
            $x->where('satuan', 'like', '%' . request('q') . '%');
-        })->get();
+        })
+        ->orderBy('satuan', 'asc')
+        ->simplePaginate(request('per_page'));
 
         return new JsonResponse($data);
     }

@@ -11,7 +11,9 @@ class SupplierController extends Controller
 {
     public function list()
     {
-        $list = Supplier::where('flaging' ,'!==','1')->get();
+        $list = Supplier::where('flaging' ,'!==','1')
+        ->orderBy('id', 'desc')
+        ->simplePaginate(request('per_page'));;
         return new JsonResponse($list);
     }
 

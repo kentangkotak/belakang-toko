@@ -16,7 +16,9 @@ class BarangController extends Controller
         ->when(request('q') !== '' || request('q') !== null, function($x){
             $x->where('namabarang', 'like', '%' . request('q') . '%')
               ->orWhere('kodebarang','like', '%' . request('q') . '%');
-        })->cursorPaginate(request('per_page'));
+        })
+        ->orderBy('id', 'desc')
+        ->simplePaginate(request('per_page'));
         return new JsonResponse($data);
     }
 
