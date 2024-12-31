@@ -11,7 +11,16 @@ class PelangganController extends Controller
 {
     public function listpelanggan()
     {
-        $list =  Pelanggan::where('flaging' ,'!==','1')->get();
+        $list =  Pelanggan::whereNull('flaging')
+        ->when(request('q') !== '' || request('q') !== null, function($x){
+            $x->where('nama', 'like', '%' . request('q') . '%')
+              ->orWhere('telepon','like', '%' . request('q') . '%')
+              ->orWhere('norek','like', '%' . request('q') . '%')
+              ->orWhere('alamat','like', '%' . request('q') . '%')
+              ;
+        })
+        ->orderBy('id', 'desc')
+        ->simplePaginate(request('per_page'));
         return new JsonResponse($list);
     }
 

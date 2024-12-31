@@ -11,9 +11,15 @@ class SupplierController extends Controller
 {
     public function list()
     {
-        $list = Supplier::where('flaging' ,'!==','1')
+        $list = Supplier::whereNull('flaging')
+        ->when(request('q') !== '' || request('q') !== null, function($x){
+            $x->where('nama', 'like', '%' . request('q') . '%')
+              ->orWhere('telepon','like', '%' . request('q') . '%')
+              ->orWhere('alamat','like', '%' . request('q') . '%')
+              ;
+        })
         ->orderBy('id', 'desc')
-        ->simplePaginate(request('per_page'));;
+        ->simplePaginate(request('per_page'));
         return new JsonResponse($list);
     }
 
