@@ -58,4 +58,18 @@ class BarangController extends Controller
             ], 200
         );
     }
+
+    public function deleteItem(Request $request)
+    {
+       $cek = Barang::find($request->id);
+       if (!$cek) {
+           return new JsonResponse(['message' => 'Data Tidak Ditemukan'], 500);
+       }
+
+       $cek->delete();
+
+       return new JsonResponse(['message' => 'Data Sudah Dihapus'], 200);
+
+
+    }
 }
