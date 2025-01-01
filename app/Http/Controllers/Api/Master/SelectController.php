@@ -24,7 +24,7 @@ class SelectController extends Controller
        $data = DB::table('satuans')
         ->select('satuan', 'flaging')
         ->where('satuan', 'like', '%' . request('q') . '%')
-        ->linit(request('limit'))
+        ->limit(request('limit'))
         ->get();
 
        return new JsonResponse($data);
