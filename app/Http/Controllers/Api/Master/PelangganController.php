@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Master;
 
+use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Pelanggan;
 use Illuminate\Http\JsonResponse;
@@ -26,19 +27,34 @@ class PelangganController extends Controller
 
     public function simpan(Request $request)
     {
-        $simpan = Pelanggan::create(
-            [
-                'nama' => $request->nama,
-                'alamat' => $request->alamat,
-                'telepon' => $request->telepon,
-                'norek' => $request->norek,
-            ]
-        );
+        if($request->kodeplgn === '' || $request->kodeplgn === null)
+        {
+            $cek = Pelanggan::count();
+            $total = (int) $cek + (int) 1;
+            $kodepelanggan = FormatingHelper::matkdbarang($total,'PLGN');
+        }else{
+            $kodepelanggan = $request->kodeplgn;
+        }
+        $simpan = Pelanggan::updateOrCreate(
+        [
+            'kodeplgn' => $kodepelanggan
+        ],
+        [
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'telepon' => $request->telepon,
+            'norek' => $request->norek,
+            'namabank' => $request->namabank,
+        ]);
+
         return new JsonResponse(
             [
                 'message' => 'Data Berhasil Disimpan...!!!',
                 'result' => $simpan
-            ], 200);
+            ],
+            200
+        );
+
     }
 
     public function hapus(Request $request)

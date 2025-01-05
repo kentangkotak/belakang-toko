@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Master;
 
+use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +26,18 @@ class SupplierController extends Controller
 
     public function simpan(Request $request)
     {
-        $simpan = Supplier::create(
+        if($request->kodesupl === '' || $request->kodesupl === null)
+        {
+            $cek = Supplier::count();
+            $total = (int) $cek + (int) 1;
+            $kodesupl = FormatingHelper::matkdbarang($total,'SUPL');
+        }else{
+            $kodesupl = $request->kodesupl;
+        }
+        $simpan = Supplier::updateOrCreate(
+            [
+                'kodesupl' => $kodesupl
+            ],
             [
                 'nama' => $request->nama,
                 'alamat' => $request->alamat,
