@@ -51,4 +51,12 @@ class SupplierController extends Controller
             ],200
         );
     }
+
+    public function alllist()
+    {
+        $list = Supplier::whereNull('flaging')
+        ->orderBy('id', 'desc')
+        ->get();
+        return new JsonResponse($list);
+    }
 }

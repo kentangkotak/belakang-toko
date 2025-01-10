@@ -1,0 +1,12 @@
+<?php
+
+use App\Http\Controllers\Api\Transaksi\Penerimaan\OrderPenerimaanController;
+use Illuminate\Support\Facades\Route;
+
+Route::group([
+    //'middleware' => 'auth:api',
+    'prefix' => 'transaksi/orderpembelian'
+], function () {
+    Route::post('/simpan', [OrderPenerimaanController::class, 'simpan']);
+    Route::get('/getlistorder', [OrderPenerimaanController::class, 'getlistorder']);
+});

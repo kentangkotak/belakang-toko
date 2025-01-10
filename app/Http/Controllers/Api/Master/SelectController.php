@@ -29,4 +29,15 @@ class SelectController extends Controller
 
        return new JsonResponse($data);
     }
+
+    public function barang_filter()
+    {
+        $data = DB::table('barangs')
+        ->select('*')
+        ->where('namabarang','like','%'. request('q') . '%')
+        ->limit(request('limit'))
+        ->get();
+
+        return new JsonResponse($data);
+    }
 }
