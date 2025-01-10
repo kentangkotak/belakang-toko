@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Master;
 
+use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Satuan;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,7 @@ class SatuanController extends Controller
         ->when(request('q') !== '' || request('q') !== null, function($x){
            $x->where('satuan', 'like', '%' . request('q') . '%');
         })
-        ->orderBy('satuan', 'asc')
+        ->orderBy('id', 'desc')
         ->simplePaginate(request('per_page'));
 
         return new JsonResponse($data);
@@ -34,7 +35,18 @@ class SatuanController extends Controller
             );
         }
 
-        $simpan = Satuan::create(
+        if($request->kodesatuan === '' || $request->kodesatuan === null)
+        {
+            $cek = Satuan::count();
+            $total = (int) $cek + (int) 1;
+            $kodesatuan = FormatingHelper::matkdbarang($total,'ST');
+        }else{
+            $kodesatuan = $request->kodesatuan;
+        }
+        $simpan = Satuan::updateOrCreate(
+            [
+                'kodesatuan' => $kodesatuan
+            ],
             [
                 'satuan' => $request->satuan
             ]
