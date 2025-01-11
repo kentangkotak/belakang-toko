@@ -20,10 +20,10 @@ Route::get('/', function () {
 });
 Route::get('/autogen', function () {
 
-    echo "ok4";
-    // $data = DB::table('barangs')->get();
+    // echo "ok45";
+    $data = DB::table('barangs')->get();
     // $data = Barang::all();
-    // return response()->json($data);
+    return response()->json($data);
 });
 
 Route::get('/autogenx', function () {
