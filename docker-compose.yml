@@ -11,38 +11,60 @@ services:
             dockerfile: Dockerfile.swooledev
         working_dir: /var/www/
         restart: unless-stopped
-        ports:
-            - "8000:8000"
         environment:
             - COMPOSER_MEMORY_LIMIT=-1
-        links:
-            - db
-        depends_on:
-            - db
+        # links:
+        #     - db
+        # depends_on:
+        #     - db
         volumes:
             - ./:/var/www
         networks:
             - harrynet
 
-
-    # DATABASE SERVER
-    db: # nama ini terserah kita
-        container_name: db
-        image: mysql:8.0 # versi mysql
+    swoole:
+        build:
+            args:
+                user: harry
+                uid: 1000
+            context: ./
+            #dockerfile: Dockerfile.dev
+            dockerfile: Dockerfile.swooledev
+        working_dir: /var/www/
         restart: unless-stopped
         ports:
-            - "3344:3306"
+            - "8000:8000"
         environment:
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_USER: ${DB_USERNAME}
-            MYSQL_PASSWORD: ${DB_PASSWORD}
-            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-            SERVICE_TAGS: dev
-            SERVICE_NAME: mysql
+            - COMPOSER_MEMORY_LIMIT=-1
+        # links:
+        #     - db
+        # depends_on:
+        #     - db
         volumes:
-            - db_data:/var/lib/mysql
+            # - ./:/var/www
+            - ./:/var/www:Z
         networks:
             - harrynet
+
+
+    # DATABASE SERVER
+    # db: # nama ini terserah kita
+    #     container_name: db
+    #     image: mysql:8.0 # versi mysql
+    #     restart: unless-stopped
+    #     ports:
+    #         - "3344:3306"
+    #     environment:
+    #         MYSQL_DATABASE: ${DB_DATABASE}
+    #         MYSQL_USER: ${DB_USERNAME}
+    #         MYSQL_PASSWORD: ${DB_PASSWORD}
+    #         MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    #         SERVICE_TAGS: dev
+    #         SERVICE_NAME: mysql
+    #     volumes:
+    #         - db_data:/var/lib/mysql
+    #     networks:
+    #         - harrynet
 
     
     # NGINX SERVER
@@ -54,7 +76,7 @@ services:
         links:
             - app
         depends_on:
-            - db
+            # - db
             - app
         ports:
             - "8182:80"
@@ -67,12 +89,25 @@ services:
 
 
 
+    watcher:
+        image: node:18
+        container_name: chokidar-watcher
+        working_dir: /var/www/
+        volumes:
+            - .:/var/www:delegated
+        command: node /var/www/watcher.js
+        healthcheck:
+            test: ["CMD-SHELL", "pgrep -f watcher.js || exit 1"]
+            interval: 10s
+            timeout: 2s
+            retries: 3
+
     
 networks:
     harrynet:
         driver: bridge
 
 
-volumes:
-    db_data:
-        driver: local
+# volumes:
+#     db_data:
+#         driver: local
