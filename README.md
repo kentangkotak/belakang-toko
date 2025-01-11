@@ -83,15 +83,21 @@ ke setiap layanan Anda (app,db,nginx).
 
 untuk melihat apakah ekstensi swoole aktif pada php
 
-  ```
+  ```sh
   php -m | grep swoole
   ```
 
 
 untuk melihat apakah ekstensi pcntl aktif pada php
 
-```
+```sh
 php -m | grep pcntl
+```
+untuk mereload octane
+
+```sh
+  docker-compose exec app bash
+  php artisan octane:reload
 ```
 
 
