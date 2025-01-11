@@ -1,73 +1,40 @@
 services:
-
-
     app:
         build:
             args:
                 user: harry
                 uid: 1000
             context: ./
-            #dockerfile: Dockerfile.dev
             dockerfile: Dockerfile.swooledev
         working_dir: /var/www/
         restart: unless-stopped
+        ports:
+            - "8001:8000" # Menghindari konflik port dengan Nginx
         environment:
             - COMPOSER_MEMORY_LIMIT=-1
-        # links:
-        #     - db
-        # depends_on:
-        #     - db
         volumes:
             - ./:/var/www
         networks:
             - harrynet
 
-    swoole:
-        build:
-            args:
-                user: harry
-                uid: 1000
-            context: ./
-            #dockerfile: Dockerfile.dev
-            dockerfile: Dockerfile.swooledev
-        working_dir: /var/www/
-        restart: unless-stopped
-        ports:
-            - "8000:8000"
-        environment:
-            - COMPOSER_MEMORY_LIMIT=-1
-        # links:
-        #     - db
-        # depends_on:
-        #     - db
-        volumes:
-            # - ./:/var/www
-            - ./:/var/www:Z
-        networks:
-            - harrynet
-
-
-    # DATABASE SERVER
-    # db: # nama ini terserah kita
-    #     container_name: db
-    #     image: mysql:8.0 # versi mysql
+    # swoole:
+    #     build:
+    #         args:
+    #             user: harry
+    #             uid: 1000
+    #         context: ./
+    #         dockerfile: Dockerfile.swooledev
+    #     working_dir: /var/www/
     #     restart: unless-stopped
     #     ports:
-    #         - "3344:3306"
+    #         - "8001:8000" # Menghindari konflik port dengan Nginx
     #     environment:
-    #         MYSQL_DATABASE: ${DB_DATABASE}
-    #         MYSQL_USER: ${DB_USERNAME}
-    #         MYSQL_PASSWORD: ${DB_PASSWORD}
-    #         MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-    #         SERVICE_TAGS: dev
-    #         SERVICE_NAME: mysql
+    #         - COMPOSER_MEMORY_LIMIT=-1
     #     volumes:
-    #         - db_data:/var/lib/mysql
+    #         - ./:/var/www
     #     networks:
     #         - harrynet
 
-    
-    # NGINX SERVER
     nginx:
         image: nginx:alpine
         container_name: nginx_tokobangunan
@@ -76,38 +43,30 @@ services:
         links:
             - app
         depends_on:
-            # - db
             - app
         ports:
-            - "8182:80"
-            - "8500:8000"
+            # - "8182:80"
+            - "8182:8000"
         volumes:
             - ./:/var/www
             - ./docker-compose/nginx:/etc/nginx/conf.d
         networks:
             - harrynet
 
+    # watcher:
+    #     image: node:18
+    #     container_name: chokidar-watcher
+    #     working_dir: /var/www/
+    #     volumes:
+    #         - .:/var/www
+    #     command: node /var/www/watcher.js
+    #     healthcheck:
+    #         test: ["CMD-SHELL", "pgrep -f watcher.js || exit 1"]
+    #         interval: 10s
+    #         timeout: 2s
+    #         retries: 3
 
-
-    watcher:
-        image: node:18
-        container_name: chokidar-watcher
-        working_dir: /var/www/
-        volumes:
-            - .:/var/www:delegated
-        command: node /var/www/watcher.js
-        healthcheck:
-            test: ["CMD-SHELL", "pgrep -f watcher.js || exit 1"]
-            interval: 10s
-            timeout: 2s
-            retries: 3
-
-    
 networks:
     harrynet:
         driver: bridge
-
-
-# volumes:
-#     db_data:
-#         driver: local
+        
