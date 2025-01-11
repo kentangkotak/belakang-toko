@@ -7,9 +7,12 @@ services:
                 user: harry
                 uid: 1000
             context: ./
-            dockerfile: Dockerfile.dev
+            #dockerfile: Dockerfile.dev
+            dockerfile: Dockerfile.swooledev
         working_dir: /var/www/
         restart: unless-stopped
+        ports:
+            - "8000:8000"
         environment:
             - COMPOSER_MEMORY_LIMIT=-1
         links:
@@ -55,6 +58,7 @@ services:
             - app
         ports:
             - "8182:80"
+            - "8500:8000"
         volumes:
             - ./:/var/www
             - ./docker-compose/nginx:/etc/nginx/conf.d

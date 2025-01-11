@@ -1,0 +1,7 @@
+2025-01-11 05:29:41,016 INFO supervisord started with pid 1
+2025-01-11 05:29:42,019 INFO spawnerr: unknown error making dispatchers for 'app': EACCES
+2025-01-11 05:29:43,022 INFO spawnerr: unknown error making dispatchers for 'app': EACCES
+2025-01-11 05:29:45,029 INFO spawnerr: unknown error making dispatchers for 'app': EACCES
+2025-01-11 05:29:48,035 INFO spawnerr: unknown error making dispatchers for 'app': EACCES
+2025-01-11 05:29:48,035 INFO gave up: app entered FATAL state, too many start retries too quickly
+2025-01-11 05:34:36,755 WARN received SIGQUIT indicating exit request

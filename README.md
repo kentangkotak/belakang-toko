@@ -79,5 +79,19 @@ Selain itu, jika Anda ingin agar kontainer laravel docker Anda tetap berjalan se
 
 ke setiap layanan Anda (app,db,nginx).
 
+# lain-lain
+
+untuk melihat apakah ekstensi swoole aktif pada php
+
+  ```
+  php -m | grep swoole
+  ```
+
+
+untuk melihat apakah ekstensi pcntl aktif pada php
+
+```
+php -m | grep pcntl
+```
 
 

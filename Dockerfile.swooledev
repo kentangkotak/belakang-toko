@@ -1,0 +1,85 @@
+# Gunakan image resmi PHP-FPM 8.3 sebagai base image
+FROM php:8.3-fpm
+
+# Arguments defined in docker-compose.yml
+ARG user
+ARG uid
+
+# Update sistem dan instal dependencies yang diperlukan
+RUN apt-get update && apt-get install -y \
+supervisor \
+    git \
+    curl \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libzip-dev \
+    zlib1g-dev \
+    pkg-config \
+    libmcrypt-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd mbstring zip opcache
+
+# Instal ekstensi PECL untuk Swoole
+RUN pecl install swoole \
+    && docker-php-ext-enable swoole
+
+# mengaktifkan modul pcntl
+RUN docker-php-ext-install pcntl
+
+# Bersihkan file cache untuk mengurangi ukuran image
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+# # Update sistem dan instal dependencies
+# RUN apt-get update && apt-get install -y \
+#     supervisor \
+#     git \
+#     curl \
+#     libssl-dev \
+#     libpng-dev \
+#     libjpeg-dev \
+#     libfreetype6-dev \
+#     libzip-dev \
+#     zlib1g-dev \
+#     pkg-config \
+#     libmcrypt-dev \
+#     && docker-php-ext-configure gd --with-freetype --with-jpeg \
+#     && docker-php-ext-install -j$(nproc) gd mbstring zip opcache \
+#     && pecl install swoole \
+#     && docker-php-ext-enable swoole pcntl \
+#     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+
+
+# Get latest Composer & install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+
+# Salin file konfigurasi Supervisor
+# COPY ./supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker-compose/php/supervisord/supervisord.conf /etc/supervisor/supervisord.conf
+
+# Buat direktori untuk file Supervisor
+RUN mkdir -p /var/log/supervisor
+
+# Tambahkan konfigurasi PHP jika diperlukan
+COPY ./docker-compose/php/local.ini /usr/local/etc/php/
+
+RUN groupadd -g 1000 www
+RUN useradd -u 1000 -ms /bin/bash -g www www
+
+COPY . /var/www
+COPY --chown=www:www . /var/www
+
+USER www
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
+# Jalankan Supervisor
+# CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
