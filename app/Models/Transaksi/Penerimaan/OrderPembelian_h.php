@@ -16,4 +16,10 @@ class OrderPembelian_h extends Model
     {
         return  $this->hasOne(Supplier::class, 'kodesupl', 'kdsuplier');
     }
+
+    public function rinci()
+    {
+        return  $this->hasMany(OrderPembelian_r::class, 'noorder', 'noorder');
+    }
+
 }

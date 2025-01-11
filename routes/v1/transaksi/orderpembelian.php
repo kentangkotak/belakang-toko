@@ -9,4 +9,7 @@ Route::group([
 ], function () {
     Route::post('/simpan', [OrderPenerimaanController::class, 'simpan']);
     Route::get('/getlistorder', [OrderPenerimaanController::class, 'getlistorder']);
+
+    Route::get('/getlistorder', [OrderPenerimaanController::class, 'getlistorder']);
+    Route::get('/getallbynoorder', [OrderPenerimaanController::class, 'getallbynoorder']);
 });

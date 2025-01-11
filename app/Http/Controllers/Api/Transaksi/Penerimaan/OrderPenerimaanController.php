@@ -33,7 +33,7 @@ class OrderPenerimaanController extends Controller
                 ],
                 [
                     'tglorder' => date('Y-m-d H:i:s'),
-                    'kdsuplier' => $request->supplier
+                    'kdsuplier' => $request->kdsuplier
                 ]
             );
             $simpanR = OrderPembelian_r::create(
@@ -68,6 +68,21 @@ class OrderPenerimaanController extends Controller
         )
         ->orderBy('id', 'desc')
         ->simplePaginate(request('per_page'));
+        return new JsonResponse($list);
+    }
+
+    public function getallbynoorder()
+    {
+        $list = OrderPembelian_h::with(
+            [
+                'suplier',
+                'rinci' => function($rinci){
+                    $rinci->with(['mbarang']);
+                }
+            ]
+        )
+        ->where('noorder', request('noorder'))
+        ->get();
         return new JsonResponse($list);
     }
 }
