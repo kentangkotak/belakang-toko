@@ -23,6 +23,8 @@ supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd mbstring zip opcache
 
+
+RUN docker-php-ext-install pdo pdo_mysql
 # Instal ekstensi PECL untuk Swoole
 RUN pecl install swoole \
     && docker-php-ext-enable swoole
@@ -61,7 +63,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 
 # Salin file konfigurasi Supervisor
-# COPY ./supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker-compose/php/supervisord/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Buat direktori untuk file Supervisor
@@ -80,6 +81,7 @@ USER www
 
 EXPOSE 9000
 
-CMD ["php-fpm"]
+# CMD ["php-fpm"]
 # Jalankan Supervisor
-# CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+# ENTRYPOINT [ "supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf" ]
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
