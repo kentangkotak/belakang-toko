@@ -40,6 +40,7 @@ class OrderPenerimaanController extends Controller
                 [
                     'noorder' => $notrans,
                     'kdbarang' => $request->kdbarang,
+                    'jumlahpo' => $request->jumlah,
                     'hargapo' => $request->harga,
                     'user' => $request->user,
                 ]
@@ -63,7 +64,10 @@ class OrderPenerimaanController extends Controller
     {
         $list = OrderPembelian_h::with(
             [
-                'suplier'
+                'suplier',
+                'rinci' => function($rinci){
+                    $rinci->with(['mbarang']);
+                }
             ]
         )
         ->orderBy('id', 'desc')
