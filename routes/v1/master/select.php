@@ -10,6 +10,8 @@ Route::group([
 ], function () {
     Route::get('/master-satuan-all', [SelectController::class, 'satuan_all']);
     Route::get('/master-satuan-filter', [SelectController::class, 'satuan_filter']);
+    Route::get('/master-get-brand', [SelectController::class, 'get_brand']);
+
 
 
     // ini untuk select yg lain

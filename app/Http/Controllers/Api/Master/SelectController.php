@@ -40,4 +40,13 @@ class SelectController extends Controller
 
         return new JsonResponse($data);
     }
+
+    public function get_brand()
+    {
+       $data = DB::table('brands')
+       ->select('brand', 'flaging')
+       ->get();
+
+       return new JsonResponse($data);
+    }
 }
