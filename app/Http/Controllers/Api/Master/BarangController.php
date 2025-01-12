@@ -37,7 +37,7 @@ class BarangController extends Controller
             ],
             [
                 'namabarang' => $request->namabarang,
-                'merk' => $request->merk,
+                'kualitas' => $request->kualitas,
                 'brand' => $request->brand,
                 'seri' => $request->seri,
                 'satuan_b' => $request->satuan_b,
