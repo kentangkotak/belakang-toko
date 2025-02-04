@@ -27,5 +27,5 @@ Route::get('/autogen', function () {
 });
 
 Route::get('/autogenx', function () {
-    return 'wew';
+    return 'wewq';
 });

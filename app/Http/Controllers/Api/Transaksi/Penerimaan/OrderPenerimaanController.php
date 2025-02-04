@@ -14,6 +14,7 @@ class OrderPenerimaanController extends Controller
 {
     public function simpan(Request $request)
     {
+       // return 'wew';
         if($request->noorder === null)
         {
             DB::select('call noorderpembelian(@nomor)');
@@ -45,13 +46,14 @@ class OrderPenerimaanController extends Controller
                     'user' => $request->user,
                 ]
             );
-
+            $hasil = self::getlistorderhasil($request);
             DB::commit();
+
             return new JsonResponse(
                 [
                     'message' => 'Data Berhasil Disimpan',
                     'notrans' => $notrans,
-                    'result' => $simpanR
+                    'result' => $hasil
                 ],200);
 
         } catch (\Exception $e) {
@@ -66,12 +68,30 @@ class OrderPenerimaanController extends Controller
             [
                 'suplier',
                 'rinci' => function($rinci){
-                    $rinci->with(['mbarang']);
+                    $rinci->select('*',DB::raw('(jumlahpo*hargapo) as subtotal'))
+                    ->with(['mbarang']);
                 }
             ]
         )
         ->orderBy('id', 'desc')
         ->simplePaginate(request('per_page'));
+        return new JsonResponse($list);
+    }
+
+    public static function getlistorderhasil($request)
+    {
+        $list = OrderPembelian_h::with(
+            [
+                'suplier',
+                'rinci' => function($rinci){
+                    $rinci->select('*',DB::raw('(jumlahpo*hargapo) as subtotal'))
+                    ->with(['mbarang']);
+                }
+            ]
+        )
+        ->where('noorder', $request->noorder)
+        ->orderBy('id', 'desc')
+        ->get();
         return new JsonResponse($list);
     }
 
