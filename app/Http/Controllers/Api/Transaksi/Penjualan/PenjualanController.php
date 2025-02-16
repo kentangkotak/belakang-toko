@@ -106,6 +106,7 @@ class PenjualanController extends Controller
             'pelanggan',
             'detail.masterBarang',
         ])
+            ->where('no_penjualan', 'like', '%' . request('q') . '%')
             ->orderBy('id', 'desc')
             ->orderBy('flag', 'asc')
             ->simplePaginate(request('per_page'));
