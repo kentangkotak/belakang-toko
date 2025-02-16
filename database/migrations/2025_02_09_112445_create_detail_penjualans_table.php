@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('no_penjualan');
             $table->string('kodebarang')->nullable();
             $table->double('jumlah', 24, 2)->default(0);
-            $table->double('herga_beli', 24, 2)->default(0);
-            $table->double('herga_jual', 24, 2)->default(0);
+            $table->double('harga_beli', 24, 2)->default(0);
+            $table->double('harga_jual', 24, 2)->default(0);
             $table->double('diskon', 24, 2)->default(0);
             $table->double('subtotal', 24, 2)->default(0);
             $table->timestamps();

@@ -47,7 +47,7 @@ class PenjualanController extends Controller
 
                 $nota = FormatingHelper::notaPenjualan($no, 'PJL');
             } else {
-                $nota = $request->noorder;
+                $nota = $request->nota;
             }
             $subtotal = ($request->jumlah * $request->harga_jual) - $request->diskon;
             $detail = DetailPenjualan::updateOrCreate(
@@ -82,7 +82,7 @@ class PenjualanController extends Controller
             if (!$detail) {
                 throw new Exception("Header Tidak Tersimpan", 1);
             }
-
+            $header->load('detail.masterBarang', 'pelanggan');
             DB::commit();
             return new JsonResponse([
                 'message' => 'Data telah disimpan',
@@ -99,5 +99,41 @@ class PenjualanController extends Controller
                 'file' => $th->getFile(),
             ], 410);
         }
+    }
+    public function getListPenjualan()
+    {
+        $raw = HeaderPenjualan::with([
+            'pelanggan',
+            'detail.masterBarang',
+        ])
+            ->orderBy('id', 'desc')
+            ->orderBy('flag', 'asc')
+            ->simplePaginate(request('per_page'));
+        $data['data'] = collect($raw)['data'];
+        $data['meta'] = collect($raw)->except('data');
+        return new JsonResponse($data);
+    }
+    public function hapusDetail(Request $request)
+    {
+        $detail = DetailPenjualan::find($request->id);
+        if (!$detail) {
+            return new JsonResponse(['message' => 'Data Tidak Ditemukan'], 410);
+        }
+        $detail->delete();
+
+        $allDetail = DetailPenjualan::where('no_penjualan', '=', $request->no_penjualan)->get();
+        $header = HeaderPenjualan::where('no_penjualan', '=', $request->no_penjualan)
+            ->first();
+        $isDeleteHeader = '0';
+        if (sizeof($allDetail) == 0) {
+            $header->delete();
+            $isDeleteHeader = '1';
+        } else $header->load('pelanggan', 'detail.masterBarang');
+
+        return new JsonResponse([
+            'message' => 'Data Sudah Dihapus',
+            'header' => $header,
+            'isDeleteHeader' => $isDeleteHeader,
+        ], 200);
     }
 }

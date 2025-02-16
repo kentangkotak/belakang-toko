@@ -9,4 +9,8 @@ Route::group([
 ], function () {
     Route::get('/list-barang', [PenjualanController::class, 'getBarang']);
     Route::post('/simpan-detail', [PenjualanController::class, 'simpanDetail']);
+    Route::post('/delete-detail', [PenjualanController::class, 'hapusDetail']);
+
+    // list penjualan
+    Route::get('/list', [PenjualanController::class, 'getListPenjualan']);
 });
