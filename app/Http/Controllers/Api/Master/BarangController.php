@@ -47,6 +47,7 @@ class BarangController extends Controller
                 GROUP_CONCAT(imagebarangs.gambar) as image,
                 GROUP_CONCAT(imagebarangs.flag_thumbnail) as flag_thumbnail
             ')
+            ->with('rincians')
             ->groupBy('barangs.id') // Group by primary key
             ->orderBy('barangs.id', 'desc')
             ->simplePaginate(request('per_page'));
@@ -90,7 +91,7 @@ class BarangController extends Controller
                     $path = $img['gambar']->store('images', 'public');
 
                     // Gunakan relasi tanpa perlu set kodebarang manual
-                    $simpan->images()->create([
+                    $simpan->rincians()->create([
                         'kodebarang' => $simpan->kodebarang,
                         'gambar' => $path
                     ]);
@@ -98,94 +99,12 @@ class BarangController extends Controller
             }
         }
 
-            // if ($request->has('rincians') && is_array($request->rincians)) {
-            // foreach ($request->rincians as $img) {
-            //     if (!empty($img['gambar']) && $img['gambar'] instanceof \Illuminate\Http\UploadedFile && $img['gambar']->isValid()) {
-            //         $path = $img['gambar']->store('images', 'public');
-
-            //         $simpan->images()->create([
-            //             'kodebarang'     => $simpan->kodebarang,
-            //             'gambar'         => $path,
-            //             ]);
-            //         }
-            //     }
-            // }
         return new JsonResponse(
                 [
                     'message' => 'Data Berhasil disimpan...!!!',
                     'result' => $simpan->load('images')
                 ], 200);
 
-        // if ($request->has('rincians')) {
-        // foreach ($request->rincians as $img) {
-        //     if (isset($img['images']) && $img['images'] instanceof \Illuminate\Http\UploadedFile) {
-        //         $path = $img['images']->store('images', 'public');
-
-        //         $simpan->imagebarang()->create([
-        //             'kodebarang' => $simpan->kodebarang,
-        //             'flag_thumbnail' => $img['flag_thumbnail'] ?? 0,
-        //             'images' => $path,
-        //             ]);
-        //         }
-        //     }
-        // }
-
-        // if ($request->has('gambar')) {
-        //     $path = $request->file('gambar')->store('image', 'public');
-        //     // array_merge($request, ['image' => $path]);
-        //     $img->create(['image' => $path]);
-        // }
-        // foreach ($request->rincians as $img) {
-        //     $simpan->dataimage()->create(
-        //         [
-        //             'kodebarang' => $simpan->kodebarang,
-        //             'gambar' => null,
-        //             'flag_thumbnail' => $img['flag_thumbnail'] ?? '0'
-        //         ]);
-        // }
-
-
-    //    if ($request->has('rincians') && is_array($request->rincians)) {
-    //     foreach ($request->rincians as $img) {
-    //         if (!empty($img['gambar']) && $img['gambar'] instanceof \Illuminate\Http\UploadedFile && $img['gambar']->isValid()) {
-    //             $path = $img['gambar']->store('images', 'public');
-
-    //             $simpan->imagebarang()->create([
-    //                 'kodebarang'     => $simpan->kodebarang,
-    //                 'flag_thumbnail' => $img['flag_thumbnail'] ?? 0,
-    //                 'gambar'         => $path,
-    //                 ]);
-    //             }
-    //         }
-    //     }
-
-
-        // if ($request->has('rincians')) {
-        // foreach ($request->rincians as $img) {
-        //     if (isset($img['images']) && $img['images'] instanceof \Illuminate\Http\UploadedFile) {
-        //         $path = $img['images']->store('images', 'public');
-
-        //         $simpan->imagebarang()->create([
-        //             'kodebarang' => $simpan->kodebarang,
-        //             'flag_thumbnail' => $img['flag_thumbnail'] ?? 0,
-        //             'images' => $path,
-        //             ]);
-        //         }
-        //     }
-        // }
-
-        // if ($request->has('gambar')) {
-        //     $path = $request->file('gambar')->store('image', 'public');
-        //     // array_merge($request, ['image' => $path]);
-        //     $img->create(['image' => $path]);
-        // }
-        // return new JsonResponse(
-        //     [
-        //         'message' => 'Data Sudah Disimpan',
-        //         'result' => $simpan
-        //     ],
-        //     200
-        // );
     }
 
     public function deleteItem(Request $request)
@@ -200,5 +119,31 @@ class BarangController extends Controller
         $cek->delete();
 
         return new JsonResponse(['message' => 'Data Sudah Dihapus'], 200);
+    }
+
+    public function deletegambar(Request $request)
+    {
+        // Cari gambar berdasarkan ID
+        $image = Imagebarang::find($request->id);
+
+        if (!$image) {
+            return response()->json([
+                'message' => 'Gambar tidak ditemukan',
+            ], 404);
+        }
+
+        // Hapus file gambar dari storage (opsional)
+        $filePath = public_path('storage/images/' . $image->image);  // Ganti dengan path yang benar
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        // Hapus data dari database
+        $image->delete();
+
+        return response()->json([
+            'message' => 'Gambar berhasil dihapus',
+        ], 200);
     }
 }
