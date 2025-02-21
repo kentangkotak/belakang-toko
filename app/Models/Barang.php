@@ -9,7 +9,7 @@ class Barang extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-     public function images()
+     public function rincians()
     {
         return $this->hasMany(Imagebarang::class, 'kodebarang', 'kodebarang');
     }
