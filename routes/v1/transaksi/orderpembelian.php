@@ -7,6 +7,7 @@ Route::group([
     //'middleware' => 'auth:api',
     'prefix' => 'transaksi/orderpembelian'
 ], function () {
+    Route::post('/hapusrincian', [OrderPenerimaanController::class, 'hapusrincianorder']);
     Route::post('/simpan', [OrderPenerimaanController::class, 'simpan']);
     Route::get('/getlistorder', [OrderPenerimaanController::class, 'getlistorder']);
 

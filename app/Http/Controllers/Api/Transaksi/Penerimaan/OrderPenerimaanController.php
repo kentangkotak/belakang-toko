@@ -109,4 +109,26 @@ class OrderPenerimaanController extends Controller
         ->get();
         return new JsonResponse($list);
     }
+
+    public function hapusrincianorder(Request $request)
+    {
+        $cek = OrderPembelian_r::find($request->id);
+        if(!$cek)
+        {
+            return new JsonResponse(['message' => 'data tidak ditemukan']);
+        }
+
+        $hapus = $cek->delete();
+        if(!$hapus)
+        {
+            return new JsonResponse(['message' => 'data gagal dihapus'],500);
+        }
+        $hasil = self::getlistorderhasil($request->noorder);
+
+        return new JsonResponse(
+            [
+                'message' => 'data berhasil dihapus',
+                'result' => $hasil
+            ], 200);
+    }
 }
