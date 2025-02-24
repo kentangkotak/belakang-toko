@@ -8,6 +8,7 @@ use App\Models\Barang;
 use App\Models\Pelanggan;
 use App\Models\Transaksi\Penjualan\DetailPenjualan;
 use App\Models\Transaksi\Penjualan\HeaderPenjualan;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,13 +41,7 @@ class PenjualanController extends Controller
     public function getSales()
     {
         // temporary sebelum ada data sales
-        $data = [
-            ['id' => 0, 'nama' => 'si A'],
-            ['id' => 1, 'nama' => 'si B'],
-            ['id' => 2, 'nama' => 'si C'],
-            ['id' => 3, 'nama' => 'si D'],
-            ['id' => 4, 'nama' => 'si E'],
-        ];
+        $data = User::get();
         return new JsonResponse($data);
     }
     public function getPelanggan()
