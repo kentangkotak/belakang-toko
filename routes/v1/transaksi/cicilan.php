@@ -8,4 +8,5 @@ Route::group([
     'prefix' => 'transaksi/cicilan'
 ], function () {
     Route::get('/list', [CicilanController::class, 'getPenjualan']);
+    Route::post('/bawa-nota', [CicilanController::class, 'bawaNota']);
 });
