@@ -13,4 +13,5 @@ Route::group([
 
     Route::get('/getlistorder', [OrderPenerimaanController::class, 'getlistorder']);
     Route::get('/getallbynoorder', [OrderPenerimaanController::class, 'getallbynoorder']);
+    Route::post('/kunci', [OrderPenerimaanController::class, 'kunci']);
 });

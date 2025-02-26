@@ -23,6 +23,10 @@ class OrderPenerimaanController extends Controller
             $notrans = FormatingHelper::matorderpembelian($no, 'OR');
         }else{
             $notrans = $request->noorder;
+            $cek = OrderPembelian_h::where('noorder', $notrans)->first();
+            if($cek->flaging === '1'){
+                return new JsonResponse(['message' => 'Maaf Data ini Sudah Dikunci...!!!'], 500);
+            }
         }
 
         try{
@@ -123,6 +127,22 @@ class OrderPenerimaanController extends Controller
         {
             return new JsonResponse(['message' => 'data gagal dihapus'],500);
         }
+        $hasil = self::getlistorderhasil($request->noorder);
+
+        return new JsonResponse(
+            [
+                'message' => 'data berhasil dihapus',
+                'result' => $hasil
+            ], 200);
+    }
+
+    public function kunci(Request $request)
+    {
+        $cari = OrderPembelian_h::where('noorder', $request->noorder)->first();
+        $cari->flaging = $request->val;
+
+        $cari->save();
+
         $hasil = self::getlistorderhasil($request->noorder);
 
         return new JsonResponse(
