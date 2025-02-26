@@ -105,7 +105,7 @@ class PenjualanController extends Controller
             if (!$detail) {
                 throw new Exception("Header Tidak Tersimpan", 1);
             }
-            $header->load('detail.masterBarang', 'pelanggan');
+            $header->load('detail.masterBarang', 'sales', 'pelanggan');
             DB::commit();
             return new JsonResponse([
                 'message' => 'Data telah disimpan',
@@ -134,6 +134,7 @@ class PenjualanController extends Controller
         $raw = HeaderPenjualan::with([
             'pelanggan',
             'detail.masterBarang',
+            'sales',
         ])
             ->where('no_penjualan', 'like', '%' . request('q') . '%')
             // ->where('flag', '!=', '1')
@@ -179,7 +180,7 @@ class PenjualanController extends Controller
             'kembali' => $request->kembali,
             'flag' => $request->cara_bayar,
         ]);
-        $data->load('detail.masterBarang', 'pelanggan');
+        $data->load('detail.masterBarang', 'sales', 'pelanggan');
         return new JsonResponse([
             'message' => 'Data Pembayaran Sudah di catat',
             'data' => $data
