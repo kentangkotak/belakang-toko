@@ -102,21 +102,61 @@ class BarangController extends Controller
         return new JsonResponse(
                 [
                     'message' => 'Data Berhasil disimpan...!!!',
-                    'result' => $simpan->load('images')
+                    'result' => $simpan->load('rincians')
                 ], 200);
 
+    }
+    public function setThumbnail(Request $request)
+    {
+        // Cari gambar yang dipilih berdasarkan ID
+        $img = Imagebarang::find($request->id);
+
+        if (!$img) {
+            return new JsonResponse(['message' => 'Data Tidak Ditemukan'], 500);
+        }
+
+        // Mulai transaksi database
+        DB::beginTransaction();
+
+        try {
+            // Ubah flag_thumbnail ke 0 untuk semua gambar terkait barang ini
+            Imagebarang::where('kodebarang', $img->kodebarang)
+                ->where('flag_thumbnail', '1')
+                ->update(['flag_thumbnail' => NULL]);
+
+            // Ubah flag_thumbnail ke 1 untuk gambar yang dipilih
+            $img->flag_thumbnail = '1';
+            $img->save();
+
+            // Commit transaksi
+            DB::commit();
+
+            return new JsonResponse(['message' => 'Berhasil Memilih Thumbnail'], 200);
+        } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi error
+            DB::rollBack();
+            return new JsonResponse(['message' => 'Gagal Memilih Thumbnail', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function deleteItem(Request $request)
     {
         // nyoba biar bisa push
 
-        $cek = Barang::find($request->id);
-        if (!$cek) {
+        $header = Barang::find($request->id);
+        if (!$header) {
             return new JsonResponse(['message' => 'Data Tidak Ditemukan'], 500);
         }
 
-        $cek->delete();
+        $header->delete();
+        foreach ($header->rincians as $image) {
+            $filePath = public_path('storage/' . $image->gambar);  // Ganti dengan path yang benar
+
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+        $header->rincians()->delete();
 
         return new JsonResponse(['message' => 'Data Sudah Dihapus'], 200);
     }
@@ -133,7 +173,7 @@ class BarangController extends Controller
         }
 
         // Hapus file gambar dari storage (opsional)
-        $filePath = public_path('storage/images/' . $image->image);  // Ganti dengan path yang benar
+        $filePath = public_path('storage/' . $image->gambar);  // Ganti dengan path yang benar
 
         if (file_exists($filePath)) {
             unlink($filePath);

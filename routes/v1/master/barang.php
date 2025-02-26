@@ -11,4 +11,5 @@ Route::group([
     Route::post('/simpanbarang', [BarangController::class, 'simpanbarang']);
     Route::post('/deletebarang', [BarangController::class, 'deleteItem']);
     Route::post('/deleteimage', [BarangController::class, 'deletegambar']);
+    Route::post('/setthumbnail', [BarangController::class, 'setThumbnail']);
 });

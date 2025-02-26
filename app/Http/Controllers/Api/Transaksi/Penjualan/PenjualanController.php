@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\Transaksi\Penjualan;
 use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
+use App\Models\Pelanggan;
 use App\Models\Transaksi\Penjualan\DetailPenjualan;
 use App\Models\Transaksi\Penjualan\HeaderPenjualan;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +33,26 @@ class PenjualanController extends Controller
             ->where(function ($x) {
                 $x->where('namabarang', 'like', '%' . request('q') . '%')
                     ->orWhere('kodebarang', 'like', '%' . request('q') . '%');
+            })
+            ->limit(request('limit'))
+            ->get();
+        return new JsonResponse($data);
+    }
+    public function getSales()
+    {
+        // temporary sebelum ada data sales
+        $data = User::get();
+        return new JsonResponse($data);
+    }
+    public function getPelanggan()
+    {
+        $data = Pelanggan::whereNull('flaging')
+            ->where(function ($x) {
+                $x->where('nama', 'like', '%' . request('q') . '%')
+                    ->orWhere('kodeplgn', 'like', '%' . request('q') . '%')
+                    ->orWhere('namabank', 'like', '%' . request('q') . '%')
+                    ->orWhere('telepon', 'like', '%' . request('q') . '%')
+                    ->orWhere('alamat', 'like', '%' . request('q') . '%');
             })
             ->limit(request('limit'))
             ->get();
@@ -74,6 +96,7 @@ class PenjualanController extends Controller
                 ],
                 [
                     'tgl' => date('Y-m-d H:i:s'),
+                    'sales_id' => $request->sales_id,
                     'pelanggan_id' => $request->pelanggan_id,
                     'total' => $total,
                     'total_diskon' => $totalDiskon,
@@ -82,7 +105,7 @@ class PenjualanController extends Controller
             if (!$detail) {
                 throw new Exception("Header Tidak Tersimpan", 1);
             }
-            $header->load('detail.masterBarang', 'pelanggan');
+            $header->load('detail.masterBarang', 'sales', 'pelanggan');
             DB::commit();
             return new JsonResponse([
                 'message' => 'Data telah disimpan',
@@ -100,15 +123,23 @@ class PenjualanController extends Controller
             ], 410);
         }
     }
+    /**
+     * list penjualan
+     * jika penjualan dari hp di flag 1
+     * di front end di bedakan cara edit nya
+     */
+
     public function getListPenjualan()
     {
         $raw = HeaderPenjualan::with([
             'pelanggan',
             'detail.masterBarang',
+            'sales',
         ])
             ->where('no_penjualan', 'like', '%' . request('q') . '%')
-            ->orderBy('id', 'desc')
+            // ->where('flag', '!=', '1')
             ->orderBy('flag', 'asc')
+            ->orderBy('id', 'desc')
             ->simplePaginate(request('per_page'));
         $data['data'] = collect($raw)['data'];
         $data['meta'] = collect($raw)->except('data');
@@ -136,5 +167,23 @@ class PenjualanController extends Controller
             'header' => $header,
             'isDeleteHeader' => $isDeleteHeader,
         ], 200);
+    }
+    public function simpanPembayaran(Request $request)
+    {
+        $data = HeaderPenjualan::where('no_penjualan', $request->no_penjualan)->first();
+        if (!$data) {
+            return new JsonResponse(['message' => 'Gagal Menyimpan, data tidak ditemukan'], 410);
+        }
+        $data->update([
+            'pelanggan_id' => $request->pelanggan_id,
+            'bayar' => $request->bayar,
+            'kembali' => $request->kembali,
+            'flag' => $request->cara_bayar,
+        ]);
+        $data->load('detail.masterBarang', 'sales', 'pelanggan');
+        return new JsonResponse([
+            'message' => 'Data Pembayaran Sudah di catat',
+            'data' => $data
+        ]);
     }
 }

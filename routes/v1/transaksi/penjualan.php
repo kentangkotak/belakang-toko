@@ -8,9 +8,12 @@ Route::group([
     'prefix' => 'transaksi/penjualan'
 ], function () {
     Route::get('/list-barang', [PenjualanController::class, 'getBarang']);
+    Route::get('/list-sales', [PenjualanController::class, 'getSales']);
+    Route::get('/list-pelanggan', [PenjualanController::class, 'getPelanggan']);
     Route::post('/simpan-detail', [PenjualanController::class, 'simpanDetail']);
     Route::post('/delete-detail', [PenjualanController::class, 'hapusDetail']);
 
+    Route::post('/simpan-pembayaran', [PenjualanController::class, 'simpanPembayaran']);
     // list penjualan
     Route::get('/list', [PenjualanController::class, 'getListPenjualan']);
 });
