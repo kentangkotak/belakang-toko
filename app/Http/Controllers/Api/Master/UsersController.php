@@ -56,6 +56,7 @@ class UsersController extends Controller
                 'nama' => $request->nama,
                 'password' => bcrypt($request->password),
                 'jabatan' => $request->jabatan,
+                'kodejabatan' => $request->kodejabatan,
                 'nohp' => $request->nohp,
                 'alamat' => $request->alamat,
             ]);
@@ -66,6 +67,7 @@ class UsersController extends Controller
                 'nama' => $request->nama,
                 'password' => bcrypt($request->password),
                 'jabatan' => $request->jabatan,
+                'kodejabatan' => $request->kodejabatan,
                 'nohp' => $request->nohp,
                 'alamat' => $request->alamat,
             ]);
