@@ -57,6 +57,23 @@ class BarangController extends Controller
 
     public function simpanbarang(Request $request)
     {
+        $messages = [
+            'rincians.*.gambar.max' => 'Ukuran Foto Tidak Boleh Lebih dari 2MB.',
+            'rincians.*.gambar.image' => 'File harus berupa gambar.',
+            'namabarang.required' => 'Nama Barang Wajib diisi.',
+            'hargajual1.numeric' => 'Harga Pengguna Harus Angka.',
+            'hargajual2.numeric' => 'Harga Toko Harus Angka.',
+            'hargabeli.numeric' => 'Harga Beli Harus Angka.'
+        ];
+
+        $request->validate([
+            'rincians.*.gambar' => 'nullable|image|max:2048', // Maksimal 2MB
+            'namabarang' => 'required',
+            'hargajual1' => 'nullable|numeric',
+            'hargajual2' => 'nullable|numeric',
+            'hargabeli' => 'nullable|numeric',
+
+        ], $messages);
 
         if ($request->kodebarang === '' || $request->kodebarang === null)
         {
