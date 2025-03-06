@@ -76,7 +76,7 @@ class OrderPenerimaanController extends Controller
                 }
             ]
         )
-        ->orderBy('id', 'desc')
+        // ->orderBy('id', 'desc')
         ->simplePaginate(request('per_page'));
         return new JsonResponse($list);
     }
@@ -150,5 +150,22 @@ class OrderPenerimaanController extends Controller
                 'message' => 'data berhasil dihapus',
                 'result' => $hasil
             ], 200);
+    }
+
+    public function getlistorderfixheder()
+    {
+        $data = OrderPembelian_h::with(
+            [
+                'suplier',
+                'rinci' => function($rinci){
+                    $rinci->select('*',DB::raw('(jumlahpo*hargapo) as subtotal'))
+                    ->with(['mbarang']);
+                }
+            ]
+        )->
+        where('flaging', '1')
+        ->get();
+
+        return new JsonResponse($data);
     }
 }
