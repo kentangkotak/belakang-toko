@@ -145,9 +145,16 @@ class OrderPenerimaanController extends Controller
 
         $hasil = self::getlistorderhasil($request->noorder);
 
+        if($request->val === '1'){
+            return new JsonResponse(
+                [
+                    'message' => 'data berhasil dikunci',
+                    'result' => $hasil
+                ], 200);
+        }
         return new JsonResponse(
             [
-                'message' => 'data berhasil dihapus',
+                'message' => 'kunci berhasil dibuka',
                 'result' => $hasil
             ], 200);
     }
