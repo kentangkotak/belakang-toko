@@ -40,13 +40,20 @@ class OrderPenerimaanController extends Controller
                     'kdsuplier' => $request->kdsuplier
                 ]
             );
+            $jumlahpo_k = $request->jumlah * $request->isi;
+            $total = $request->jumlah * $request->harga;
             $simpanR = OrderPembelian_r::create(
                 [
                     'noorder' => $notrans,
                     'kdbarang' => $request->kdbarang,
                     'jumlahpo' => $request->jumlah,
+                    'satuan_b' => $request->satuan_b,
+                    'jumlahpo_k' => $jumlahpo_k,
+                    'satuan_k' => $request->satuan_k,
+                    'isi' => $request->isi,
                     'hargapo' => $request->harga,
-                    'user' => $request->user,
+                    'total' => $total,
+                    'user' => '',
                 ]
             );
 
