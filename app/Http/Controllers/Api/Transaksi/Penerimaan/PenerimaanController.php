@@ -14,11 +14,12 @@ class PenerimaanController extends Controller
 {
     public function simpan(Request $request)
     {
+
         if($request->penerimaan === '' || $request->penerimaan === null)
         {
             DB::select('call nopenerimaan(@nomor)');
-            $x = DB::table('counter')->select('nopenerimaan')->get();
-            $no = $x[0]->nopenerimaan;
+            $x = DB::table('counter')->select('penerimaan')->get();
+            $no = $x[0]->penerimaan;
             $nopenerimaan = FormatingHelper::nopenerimaan($no, 'P');
         }else{
             $nopenerimaan = $request->penerimaan;
@@ -26,37 +27,54 @@ class PenerimaanController extends Controller
 
         try{
             DB::beginTransaction();
-            $simpan = Penerimaan_h::updateOrCreate(
-                [
-                    'nopenerimaan' => $nopenerimaan,
-                ],
-                [
-                    'noorder' => $request->noorder,
-                    'tgl' => date('Y-m-d H:i:s'),
-                    'kdsupllier' => $request->kdsuplier,
-                ]
-            );
-
-            $simpanR = Penerimaan_r::create(
-                [
-                    'nopenerimaan' => $nopenerimaan,
-                    'noorder' => $request->noorder,
-                    'kdbarang' => $request->kdbarang,
-                    'jumlah_b' => $request->noorder,
-                    'jumlah_k' => $request->noorder,
-                    'isi' => $request->isi,
-                    'satuan_b' => $request->satuan_b,
-                    'satuan_k' => $request->satuan_k,
-                    'hargafaktur' => $request->hargafaktur,
-                    'harga_beli_b' => $request->hargaasli,
-                    'harga_beli_k' => $request->noorder,
-                    'subtotal' => $request->noorder,
-                ]
-            );
+                $simpan = Penerimaan_h::updateOrCreate(
+                    [
+                        'nopenerimaan' => $nopenerimaan,
+                    ],
+                    [
+                        'noorder' => $request->noorder,
+                        'tgl' => date('Y-m-d H:i:s'),
+                        'kdsupllier' => $request->kdsuplier,
+                    ]
+                );
+                // return 'wew';
+                $hargabelisatuankecil = $request->jumlahpo/$request->isi;
+                $simpanR = Penerimaan_r::create(
+                    [
+                        'nopenerimaan' => $nopenerimaan,
+                        'noorder' => $request->noorder,
+                        'kdbarang' => $request->kdbarang,
+                        'jumlah_b' => $request->jumlahpo,
+                        'jumlah_k' => $request->jumlahpo_k,
+                        'isi' => $request->isi,
+                        'satuan_b' => $request->satuan_b,
+                        'satuan_k' => $request->satuan_k,
+                        'hargafaktur' => $request->hargafaktur,
+                        'harga_beli_b' => $request->hargaasli,
+                        'harga_beli_k' => $hargabelisatuankecil,
+                        'subtotal' => 1,
+                    ]
+                );
             DB::commit();
+                return new JsonResponse([
+                    'message' => 'Data Tersimpan',
+                    'result' => $simpanR
+                ]);
+
         }catch (\Exception $e){
             DB::rollBack();
             return new JsonResponse(['message' => 'ada kesalahan', 'error' => $e], 500);
         }
+    }
+
+    public function getList()
+    {
+        $list = Penerimaan_h::with(
+            [
+                'rinci'
+            ]
+        )
+        ->simplePaginate(request('per_page'));
+        return new JsonResponse($list);
     }
 }
