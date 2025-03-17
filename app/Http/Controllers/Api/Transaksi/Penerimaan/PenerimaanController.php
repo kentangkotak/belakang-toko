@@ -15,14 +15,14 @@ class PenerimaanController extends Controller
     public function simpan(Request $request)
     {
 
-        if($request->penerimaan === '' || $request->penerimaan === null)
+        if($request->nopenerimaan === '' || $request->nopenerimaan === null)
         {
             DB::select('call nopenerimaan(@nomor)');
             $x = DB::table('counter')->select('penerimaan')->get();
             $no = $x[0]->penerimaan;
             $nopenerimaan = FormatingHelper::nopenerimaan($no, 'P');
         }else{
-            $nopenerimaan = $request->penerimaan;
+            $nopenerimaan = $request->nopenerimaan;
         }
 
         try{
@@ -56,9 +56,10 @@ class PenerimaanController extends Controller
                     ]
                 );
             DB::commit();
+            $hasil = self::getlistpenerimaanhasil($nopenerimaan);
                 return new JsonResponse([
                     'message' => 'Data Tersimpan',
-                    'result' => $simpanR
+                    'result' => $hasil
                 ]);
 
         }catch (\Exception $e){
@@ -67,11 +68,33 @@ class PenerimaanController extends Controller
         }
     }
 
+    public static function getlistpenerimaanhasil($nopenerimaan)
+    {
+        $list = Penerimaan_h::with(
+            [
+                'suplier',
+                'rinci'
+                => function($rinci){
+                    $rinci->with(['mbarang']);
+                }
+            ]
+        )
+        ->where('nopenerimaan', $nopenerimaan)
+        ->orderBy('id', 'desc')
+        ->get();
+        return $list;
+    }
+
     public function getList()
     {
         $list = Penerimaan_h::with(
             [
-                'rinci'
+                'rinci' => function($rinci){
+                    $rinci->with(['mbarang']);
+                },
+                'suplier',
+                'orderheder',
+                'orderheder.rinci',
             ]
         )
         ->simplePaginate(request('per_page'));
