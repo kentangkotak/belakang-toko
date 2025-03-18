@@ -38,7 +38,9 @@ class PenerimaanController extends Controller
                     ]
                 );
                 // return 'wew';
-                $hargabelisatuankecil = $request->jumlahpo/$request->isi;
+                $hargabelisatuankecil = $request->hargaasli/$request->jumlahpo_k;
+                $subtotal = $request->jumlahpo*$request->hargafaktur;
+                $subtotalfix = $request->hargaasli*$request->jumlahpo_k;
                 $simpanR = Penerimaan_r::create(
                     [
                         'nopenerimaan' => $nopenerimaan,
@@ -52,7 +54,9 @@ class PenerimaanController extends Controller
                         'hargafaktur' => $request->hargafaktur,
                         'harga_beli_b' => $request->hargaasli,
                         'harga_beli_k' => $hargabelisatuankecil,
-                        'subtotal' => 1,
+                        'subtotal' => $subtotal,
+                        'subtotalfix' => $subtotalfix,
+                        'flaging' => '1',
                     ]
                 );
             DB::commit();
@@ -99,5 +103,27 @@ class PenerimaanController extends Controller
         )
         ->simplePaginate(request('per_page'));
         return new JsonResponse($list);
+    }
+
+    public function hapus(Request $request)
+    {
+        $cek = Penerimaan_r::find($request->id);
+        if(!$cek)
+        {
+            return new JsonResponse(['message' => 'data tidak ditemukan']);
+        }
+
+        $hapus = $cek->delete();
+        if(!$hapus)
+        {
+            return new JsonResponse(['message' => 'data gagal dihapus'],500);
+        }
+        $hasil = self::getlistpenerimaanhasil($request->nopenerimaan);
+
+        return new JsonResponse(
+            [
+                'message' => 'data berhasil dihapus',
+                'result' => $hasil
+            ], 200);
     }
 }

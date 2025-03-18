@@ -8,5 +8,6 @@ Route::group([
     'prefix' => 'transaksi/penerimaan'
 ], function () {
     Route::post('/simpan', [PenerimaanController::class, 'simpan']);
+    Route::post('/hapusrincian', [PenerimaanController::class, 'hapus']);
     Route::get('/getpenerimaan', [PenerimaanController::class, 'getList']);
 });
