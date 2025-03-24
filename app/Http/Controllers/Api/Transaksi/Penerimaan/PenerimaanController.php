@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Transaksi\Penerimaan;
 
 use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Transaksi\Penerimaan\OrderPembelian_h;
+use App\Models\Transaksi\Penerimaan\OrderPembelian_r;
 use App\Models\Transaksi\Penerimaan\Penerimaan_h;
 use App\Models\Transaksi\Penerimaan\Penerimaan_r;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +16,18 @@ class PenerimaanController extends Controller
 {
     public function simpan(Request $request)
     {
+
+        $cek = Penerimaan_r::select(DB::raw('SUM(jumlah_b) as jumlahdatang'))->where('noorder', $request->noorder)->where('kdbarang', $request->kdbarang)->first();
+        $totalbarangdatang = $cek->jumlahdatang + $request->jumlahpo;
+
+        if($totalbarangdatang > $request->jumlahorder )
+        {
+            return new JsonResponse(['message' => 'Barang Yang Datang Melebihi Barang Yang di Pesan...!'], 500);
+        }
+
+        if($request->jumlahpo - $totalbarangdatang === 0){
+
+        }
 
         if($request->nopenerimaan === '' || $request->nopenerimaan === null)
         {
@@ -38,6 +52,7 @@ class PenerimaanController extends Controller
                     ]
                 );
                 // return 'wew';
+                $jumlah_k = $request->isi*$request->jumlahpo;
                 $hargabelisatuankecil = $request->hargaasli/$request->jumlahpo_k;
                 $subtotal = $request->jumlahpo*$request->hargafaktur;
                 $subtotalfix = $request->hargaasli*$request->jumlahpo_k;
@@ -47,7 +62,7 @@ class PenerimaanController extends Controller
                         'noorder' => $request->noorder,
                         'kdbarang' => $request->kdbarang,
                         'jumlah_b' => $request->jumlahpo,
-                        'jumlah_k' => $request->jumlahpo_k,
+                        'jumlah_k' => $jumlah_k,
                         'isi' => $request->isi,
                         'satuan_b' => $request->satuan_b,
                         'satuan_k' => $request->satuan_k,
@@ -56,9 +71,24 @@ class PenerimaanController extends Controller
                         'harga_beli_k' => $hargabelisatuankecil,
                         'subtotal' => $subtotal,
                         'subtotalfix' => $subtotalfix,
-                        'flaging' => '1',
                     ]
                 );
+
+                if($request->jumlahorder - $totalbarangdatang === 0){
+                    $update = OrderPembelian_r::where('noorder', $request->noorder)->where('kdbarang', $request->kdbarang)->first();
+                    $update->flaging = 1;
+                    $update->save();
+                }
+
+                $cekflagingrinci = OrderPembelian_r::where('noorder', $request->noorder)->where('flaging','!=', '1')->count();
+                if($cekflagingrinci === 0)
+                {
+                    $updateorderheder = OrderPembelian_h::where('noorder', $request->noorder)->first();
+                    $updateorderheder->flaging = 2;
+                    $updateorderheder->save();
+                }
+
+
             DB::commit();
             $hasil = self::getlistpenerimaanhasil($nopenerimaan);
                 return new JsonResponse([
@@ -98,7 +128,10 @@ class PenerimaanController extends Controller
                 },
                 'suplier',
                 'orderheder',
-                'orderheder.rinci',
+                'orderheder.rinci' => function($rinci){
+                    $rinci->select('*','jumlahpo as jumlahpox','hargapo as hargafix',DB::raw('(jumlahpo*hargapo) as subtotal'))
+                    ->with(['mbarang']);
+                },
             ]
         )
         ->simplePaginate(request('per_page'));

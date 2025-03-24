@@ -172,9 +172,9 @@ class OrderPenerimaanController extends Controller
             [
                 'suplier',
                 'rinci' => function($rinci){
-                    $rinci->select('*',DB::raw('(jumlahpo*hargapo) as subtotal'))
+                    $rinci->select('*','jumlahpo as jumlahpox','hargapo as hargafix',DB::raw('(jumlahpo*hargapo) as subtotal'))
                     ->with(['mbarang']);
-                }
+                },
             ]
         )->
         where('flaging', '1')

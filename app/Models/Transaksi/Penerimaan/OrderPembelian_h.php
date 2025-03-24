@@ -22,4 +22,9 @@ class OrderPembelian_h extends Model
         return  $this->hasMany(OrderPembelian_r::class, 'noorder', 'noorder');
     }
 
+    public function penerimaanrinci()
+    {
+        return  $this->hasMany(Penerimaan_r::class, 'noorder', 'noorder');
+    }
+
 }
