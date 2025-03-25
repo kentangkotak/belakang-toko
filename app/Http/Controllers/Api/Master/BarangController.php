@@ -102,7 +102,7 @@ class BarangController extends Controller
             'hargajual1' => $request->hargajual1,
             'hargajual2' => $request->hargajual2,
             'hargabeli' => $request->hargabeli,
-            // 'ukuran' => $request->ukuran,
+            'ukuran' => $request->ukuran,
         ]);
         if ($request->has('rincians')) {
         $hasThumbnail = false; // Flag untuk menandai apakah sudah ada thumbnail
