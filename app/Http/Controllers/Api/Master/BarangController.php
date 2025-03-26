@@ -84,11 +84,13 @@ class BarangController extends Controller
             $kodebarang = $request->kodebarang;
         }
 
+        $namagabung = $request->brand . ' ' . $request->ukuran . ' ' . $request->namabarang . ' ' . $request->kualitas;
         $simpan = Barang::updateOrCreate(
         [
             'kodebarang' => $kodebarang
         ],
         [
+            'namagabung' => $namagabung,
             'namabarang' => $request->namabarang,
             'kualitas' => $request->kualitas,
             'brand' => $request->brand,
@@ -103,14 +105,25 @@ class BarangController extends Controller
             'ukuran' => $request->ukuran,
         ]);
         if ($request->has('rincians')) {
-            foreach ($request->rincians as $img) {
+        $hasThumbnail = false; // Flag untuk menandai apakah sudah ada thumbnail
+
+        foreach ($request->rincians as $img) {
                 if (isset($img['gambar']) && $img['gambar']->isValid()) {
                     $path = $img['gambar']->store('images', 'public');
 
-                    // Gunakan relasi tanpa perlu set kodebarang manual
+                    // Jika flag_thumbnail = 1 dan belum ada thumbnail sebelumnya
+                    if (isset($img['flag_thumbnail']) && $img['flag_thumbnail'] === '1' && !$hasThumbnail) {
+                        $flagThumbnail = '1';
+                        $hasThumbnail = true; // Set flag bahwa sudah ada thumbnail
+                    } else {
+                        $flagThumbnail = null; // Reset flag_thumbnail untuk gambar lain
+                    }
+
+                    // Simpan gambar dengan flag_thumbnail
                     $simpan->rincians()->create([
                         'kodebarang' => $simpan->kodebarang,
-                        'gambar' => $path
+                        'gambar' => $path,
+                        'flag_thumbnail' => $flagThumbnail,
                     ]);
                 }
             }
