@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Transaksi\Penerimaan;
 
 use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Stok\stok;
 use App\Models\Transaksi\Penerimaan\OrderPembelian_h;
 use App\Models\Transaksi\Penerimaan\OrderPembelian_r;
 use App\Models\Transaksi\Penerimaan\Penerimaan_h;
@@ -11,6 +12,7 @@ use App\Models\Transaksi\Penerimaan\Penerimaan_r;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 
 class PenerimaanController extends Controller
 {
@@ -140,6 +142,18 @@ class PenerimaanController extends Controller
 
     public function hapus(Request $request)
     {
+        $cekorderanrinci = OrderPembelian_r::where('noorder', $request->noorder)->where('kdbarang', $request->kdbarang)->first();
+        if($cekorderanrinci->flaging === '1'){
+            $cekorderanrinci->flaging = '';
+            $cekorderanrinci->save();
+        }
+
+        $cekorderanheder = OrderPembelian_h::where('noorder', $request->noorder)->first();
+        if($cekorderanheder->flaging === '2'){
+            $cekorderanheder->flaging = '1';
+            $cekorderanheder->save();
+        }
+
         $cek = Penerimaan_r::find($request->id);
         if(!$cek)
         {
@@ -158,5 +172,38 @@ class PenerimaanController extends Controller
                 'message' => 'data berhasil dihapus',
                 'result' => $hasil
             ], 200);
+    }
+
+    public function kirimstok(Request $request)
+    {
+        try{
+            DB::beginTransaction();
+                $rinci = $request->list;
+                foreach ($rinci as $key => $value) {
+                    stok::create(
+                        [
+                            'nopenerimaan' => $value['nopenerimaan'],
+                            'idpenerimaan' => $value['id'],
+                            'kdbarang' => $value['kdbarang'],
+                            'jumlah_b' => $value['jumlah_b'],
+                            'jumlah_k' => $value['jumlah_k'],
+                            'isi' => $value['isi'],
+                            'satuan_b' => $value['satuan_b'],
+                            'satuan_k' => $value['satuan_k'],
+                            'harga_beli_b' => $value['harga_beli_b'],
+                            'harga_beli_k' => $value['harga_beli_k'],
+                        ]
+                    );
+                }
+                $kuncipenerimaan = Penerimaan_h::where('nopenerimaan', $request->nopenerimaan)->first();
+                $kuncipenerimaan->kunci = '1';
+                $kuncipenerimaan->save();
+            DB::commit();
+            $hasil = self::getlistpenerimaanhasil($request->nopenerimaan);
+                return new JsonResponse(['message' => 'Data Berhasil Disimpan', 'result' => $hasil], 200);
+        }catch (\Exception $e){
+            DB::rollBack();
+            return new JsonResponse(['message' => 'ada kesalahan', 'error' => $e], 500);
+        }
     }
 }
