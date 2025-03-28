@@ -57,7 +57,7 @@ class PenerimaanController extends Controller
                 $jumlah_k = $request->isi*$request->jumlahpo;
                 $hargabelisatuankecil = $request->hargaasli/$request->jumlahpo_k;
                 $subtotal = $request->jumlahpo*$request->hargafaktur;
-                $subtotalfix = $request->hargaasli*$request->jumlahpo_k;
+                $subtotalfix = $hargabelisatuankecil*$request->jumlahpo_k*$request->jumlahpo;
                 $simpanR = Penerimaan_r::create(
                     [
                         'nopenerimaan' => $nopenerimaan,
