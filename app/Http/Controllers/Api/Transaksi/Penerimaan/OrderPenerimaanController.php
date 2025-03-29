@@ -6,6 +6,7 @@ use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Transaksi\Penerimaan\OrderPembelian_h;
 use App\Models\Transaksi\Penerimaan\OrderPembelian_r;
+use App\Models\Transaksi\Penerimaan\Penerimaan_h;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,10 +24,10 @@ class OrderPenerimaanController extends Controller
             $notrans = FormatingHelper::matorderpembelian($no, 'OR');
         }else{
             $notrans = $request->noorder;
-            $cek = OrderPembelian_h::where('noorder', $notrans)->first();
-            if($cek->flaging === '1'){
-                return new JsonResponse(['message' => 'Maaf Data ini Sudah Dikunci...!!!'], 500);
-            }
+            // $cek = OrderPembelian_h::where('noorder', $notrans)->first();
+            // if($cek->flaging === '1'){
+            //     return new JsonResponse(['message' => 'Maaf Data ini Sudah Dikunci...!!!'], 500);
+            // }
         }
 
         try{
@@ -145,6 +146,7 @@ class OrderPenerimaanController extends Controller
 
     public function kunci(Request $request)
     {
+
         $cari = OrderPembelian_h::where('noorder', $request->noorder)->first();
         $cari->flaging = $request->val;
 
@@ -152,16 +154,9 @@ class OrderPenerimaanController extends Controller
 
         $hasil = self::getlistorderhasil($request->noorder);
 
-        if($request->val === '1'){
-            return new JsonResponse(
-                [
-                    'message' => 'data berhasil dikunci',
-                    'result' => $hasil
-                ], 200);
-        }
         return new JsonResponse(
             [
-                'message' => 'kunci berhasil dibuka',
+                'message' => $request->val === '1' ? 'Data Berhasil Dikunci...!!!' :'Data Berhasil Dibuka...!!!',
                 'result' => $hasil
             ], 200);
     }
