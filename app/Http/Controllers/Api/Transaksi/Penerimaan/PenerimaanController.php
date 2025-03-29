@@ -125,8 +125,8 @@ class PenerimaanController extends Controller
     {
         $list = Penerimaan_h::with(
             [
-                'rinci' => function($rinci){
-                    $rinci->with(['mbarang']);
+                'rinci' => function($rincipenerimaan){
+                    $rincipenerimaan->with(['mbarang']);
                 },
                 'suplier',
                 'orderheder',
