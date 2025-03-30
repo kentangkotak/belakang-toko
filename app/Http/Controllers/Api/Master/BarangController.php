@@ -90,8 +90,8 @@ class BarangController extends Controller
             'kodebarang' => $kodebarang
         ],
         [
-            'namagabung' => $namagabung,
-            'namabarang' => $request->namabarang,
+            'namagabung' => $request->namabarang,
+            'namabarang' => $namagabung,
             'kualitas' => $request->kualitas,
             'brand' => $request->brand,
             'seri' => $request->seri,

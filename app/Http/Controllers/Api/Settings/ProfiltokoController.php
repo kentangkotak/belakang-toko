@@ -38,7 +38,12 @@ class ProfiltokoController extends Controller
             'result' => $profil
         ], 200);
     }
+    public function dataprofil()
+    {
+        $data = Profil::get(); // Ambil data profil
 
+        return new JsonResponse($data);
+    }
    public function save(Request $request)
     {
         // Validasi dasar
@@ -66,12 +71,12 @@ class ProfiltokoController extends Controller
 
         // Handle foto dengan kondisi yang sangat jelas
         if ($request->input('is_new_foto') === '1') {
-            // Upload file baru
             $path = $request->file('foto')->store('profil_foto', 'public');
-            $data['foto'] = $path; ;
+            $data['foto'] = $path; // Format: 'profil_foto/filename.jpg'
         } elseif ($request->filled('foto_path')) {
-            // Pertahankan foto lama
-            $data['foto'] = str_replace('/storage/', '', $request->foto_path);
+            // Pastikan path bersih dari /storage/ dan leading slash
+            $cleanPath = ltrim(str_replace('/storage/', '', $request->foto_path), '/');
+            $data['foto'] = $cleanPath;
         }
         // Jika tidak ada keduanya, foto tidak diupdate
 
