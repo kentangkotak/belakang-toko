@@ -20,6 +20,7 @@ return new class extends Migration
             $table->double('harga_jual', 24, 2)->default(0);
             $table->double('diskon', 24, 2)->default(0);
             $table->double('subtotal', 24, 2)->default(0);
+            $table->unsignedBigInteger('stok_id')->nullable();
             $table->timestamps();
         });
     }
