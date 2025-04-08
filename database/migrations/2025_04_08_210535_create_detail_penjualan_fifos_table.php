@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_penjualans', function (Blueprint $table) {
+        Schema::create('detail_penjualan_fifos', function (Blueprint $table) {
             $table->id();
             $table->string('no_penjualan');
             $table->string('kodebarang')->nullable();
@@ -20,6 +20,7 @@ return new class extends Migration
             $table->double('harga_jual', 24, 2)->default(0);
             $table->double('diskon', 24, 2)->default(0);
             $table->double('subtotal', 24, 2)->default(0);
+            $table->unsignedBigInteger('stok_id')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_penjualans');
+        Schema::dropIfExists('detail_penjualan_fifos');
     }
 };

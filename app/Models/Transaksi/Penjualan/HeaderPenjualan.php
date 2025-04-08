@@ -15,6 +15,10 @@ class HeaderPenjualan extends Model
     {
         return $this->hasMany(DetailPenjualan::class, 'no_penjualan', 'no_penjualan');
     }
+    public function detailFifo()
+    {
+        return $this->hasMany(DetailPenjualanFifo::class, 'no_penjualan', 'no_penjualan');
+    }
     public function cicilan()
     {
         return $this->hasMany(PembayaranCicilan::class, 'no_penjualan', 'no_penjualan');

@@ -6,7 +6,9 @@ use App\Helpers\FormatingHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\Pelanggan;
+use App\Models\Stok\stok;
 use App\Models\Transaksi\Penjualan\DetailPenjualan;
+use App\Models\Transaksi\Penjualan\DetailPenjualanFifo;
 use App\Models\Transaksi\Penjualan\HeaderPenjualan;
 use App\Models\User;
 use Exception;
@@ -34,6 +36,22 @@ class PenjualanController extends Controller
                 $x->where('namabarang', 'like', '%' . request('q') . '%')
                     ->orWhere('kodebarang', 'like', '%' . request('q') . '%');
             })
+            ->with([
+                'stok' => function ($q) {
+                    $q->select(
+                        'kdbarang',
+                        DB::raw('sum(jumlah_b) as jumlah_b'),
+                        DB::raw('sum(jumlah_k) as jumlah_k'),
+                        'isi',
+                        'satuan_b',
+                        'satuan_k',
+                        'harga_beli_b',
+                        'harga_beli_k',
+                    )
+                        ->groupBy('kdbarang')
+                        ->where('jumlah_k', '>', 0);
+                },
+            ])
             ->limit(request('limit'))
             ->get();
         return new JsonResponse($data);
@@ -133,6 +151,7 @@ class PenjualanController extends Controller
     {
         $raw = HeaderPenjualan::with([
             'pelanggan',
+            'detailFifo.masterBarang',
             'detail.masterBarang',
             'sales',
         ])
@@ -170,20 +189,77 @@ class PenjualanController extends Controller
     }
     public function simpanPembayaran(Request $request)
     {
-        $data = HeaderPenjualan::where('no_penjualan', $request->no_penjualan)->first();
-        if (!$data) {
-            return new JsonResponse(['message' => 'Gagal Menyimpan, data tidak ditemukan'], 410);
+        try {
+            DB::beginTransaction();
+            $data = HeaderPenjualan::where('no_penjualan', $request->no_penjualan)->first();
+            if (!$data) {
+                return new JsonResponse(['message' => 'Gagal Menyimpan, data tidak ditemukan'], 410);
+            }
+            $data->update([
+                'pelanggan_id' => $request->pelanggan_id,
+                'bayar' => $request->bayar,
+                'kembali' => $request->kembali,
+                'flag' => $request->cara_bayar,
+            ]);
+
+            $detail = DetailPenjualan::where('no_penjualan', $request->no_penjualan)->get();
+            $kode = $detail->pluck('kodebarang');
+            $stoks = stok::lockForUpdate()->whereIn('kdbarang', $kode)->where('jumlah_k', '>', 0)->orderBy('id', 'asc')->get();
+
+
+            // update Stok
+            foreach ($detail as $item) {
+                $stok = collect($stoks)->where('kdbarang', $item->kodebarang);
+                $jumlahKeluar = $item->jumlah;
+                foreach ($stok as $stokItem) {
+                    if ($jumlahKeluar <= 0) break;
+                    $sisa = $stokItem->jumlah_k;
+
+                    $pengurangan = min($jumlahKeluar, $sisa);
+                    $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
+                        'no_penjualan' => $request->no_penjualan,
+                        'kodebarang' => $item->kodebarang,
+                        'stok_id' => $stokItem->id,
+                    ], [
+                        'jumlah' => $pengurangan,
+                        'harga_beli' => $stokItem->harga_beli_k,
+                        'harga_jual' => $item->harga_jual,
+                        'diskon' => $item->diskon,
+                        'subtotal' => $item->subtotal,
+                    ]);
+                    if (!$simpanRinciFifo) {
+                        throw new \Exception('Rincian Obat gagal disimpan');
+                    }
+                    // Update jumlah stok pada item
+                    $stokItem->decrement('jumlah_k', $pengurangan); // Perbaikan: langsung update jumlah dalam satu langkah
+                    $jumlahKeluar -= $pengurangan; // Perbaikan: kurangi permintaan yang sudah terpenuhi
+
+                }
+                // return new JsonResponse([
+                //     'message' => 'Percobaan',
+                //     'item' => $item,
+                //     'stok' => $stok,
+                // ], 410);
+            }
+            $data->load(
+                'detail.masterBarang',
+                'detailFifo.masterBarang',
+                'sales',
+                'pelanggan'
+            );
+
+            DB::commit();
+            return new JsonResponse([
+                'message' => 'Data Pembayaran Sudah di catat',
+                'data' => $data
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return new JsonResponse([
+                'message' => $th->getMessage(),
+                'line' => $th->getLine(),
+                'file' => $th->getFile(),
+            ], 410);
         }
-        $data->update([
-            'pelanggan_id' => $request->pelanggan_id,
-            'bayar' => $request->bayar,
-            'kembali' => $request->kembali,
-            'flag' => $request->cara_bayar,
-        ]);
-        $data->load('detail.masterBarang', 'sales', 'pelanggan');
-        return new JsonResponse([
-            'message' => 'Data Pembayaran Sudah di catat',
-            'data' => $data
-        ]);
     }
 }
