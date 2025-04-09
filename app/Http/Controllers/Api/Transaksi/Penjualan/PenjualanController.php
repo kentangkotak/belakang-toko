@@ -208,49 +208,68 @@ class PenjualanController extends Controller
 
 
             // update Stok
+            $detaiPengurangan = [];
             foreach ($detail as $item) {
                 if (sizeof($stoks) > 0) {
                     $stok = collect($stoks)->where('kdbarang', $item->kodebarang);
                     $jumlahKeluar = $item->jumlah;
+                    $total_stok_tersedia = $stok->sum('jumlah_k');
+
+                    // Skenario 1: Proses semua stok yang tersedia
                     foreach ($stok as $stokItem) {
                         if ($jumlahKeluar <= 0) break;
-                        $sisa = $stokItem->jumlah_k;
-                        if ($sisa >= $jumlahKeluar) {
-                            $pengurangan = min($jumlahKeluar, $sisa);
-                            $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
-                                'no_penjualan' => $request->no_penjualan,
-                                'kodebarang' => $item->kodebarang,
-                                'stok_id' => $stokItem->id,
-                            ], [
-                                'jumlah' => $pengurangan,
-                                'harga_beli' => $stokItem->harga_beli_k,
-                                'harga_jual' => $item->harga_jual,
-                                'diskon' => $item->diskon,
-                                'subtotal' => $item->subtotal,
-                            ]);
-                            if (!$simpanRinciFifo) {
-                                throw new \Exception('Rincian Obat gagal disimpan');
-                            }
-                            // Update jumlah stok pada item
-                            $stokItem->decrement('jumlah_k', $pengurangan); // Perbaikan: langsung update jumlah dalam satu langkah
-                            $jumlahKeluar -= $pengurangan; // Perbaikan: kurangi permintaan yang sudah terpenuhi
-                        } else {
+                        $pengurangan = min($jumlahKeluar, $stokItem->jumlah_k);
 
-                            $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
-                                'no_penjualan' => $request->no_penjualan,
-                                'kodebarang' => $item->kodebarang,
-                            ], [
-                                'jumlah' => $item->jumlah,
-                                'harga_beli' => $stokItem->harga_beli_k,
-                                'harga_jual' => $item->harga_jual,
-                                'diskon' => $item->diskon,
-                                'subtotal' => $item->subtotal,
-                                'stok_id' => null,
-                            ]);
-                            if (!$simpanRinciFifo) {
-                                throw new \Exception('Rincian Obat gagal disimpan');
-                            }
+
+                        $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
+                            'no_penjualan' => $request->no_penjualan,
+                            'kodebarang' => $item->kodebarang,
+                            'stok_id' => $stokItem->id,
+                        ], [
+                            'jumlah' => $pengurangan,
+                            'harga_beli' => $stokItem->harga_beli_k,
+                            'harga_jual' => $item->harga_jual,
+                            'diskon' => $item->diskon * ($pengurangan / $item->jumlah),
+                            'subtotal' => ($pengurangan * $item->harga_jual) - ($item->diskon * ($pengurangan / $item->jumlah)),
+                        ]);
+                        if (!$simpanRinciFifo) {
+                            throw new \Exception('Rincian Obat gagal disimpan');
                         }
+                        $stokItem->decrement('jumlah_k', $pengurangan);
+                        $jumlahKeluar -= $pengurangan;
+
+                        $detaiPengurangan[] = [
+                            'pengurangan' => $pengurangan,
+                            'simpanRinciFifo' => $simpanRinciFifo,
+                            'jumlahKeluar' => $jumlahKeluar,
+                        ];
+                    }
+
+                    // Skenario 2: Jika masih ada sisa yang belum terpenuhi
+                    if ($jumlahKeluar > 0) {
+                        $stok = stok::where('kdbarang', $item->kodebarang)->orderBy('id', 'desc')->first();
+                        if (!$stok) {
+                            throw new \Exception('Belum pernah ada stok untuk barang ini');
+                        }
+                        $simpanRinciFifo = DetailPenjualanFifo::create([
+                            'no_penjualan' => $request->no_penjualan,
+                            'kodebarang' => $item->kodebarang,
+
+                            'jumlah' => $jumlahKeluar,
+                            'harga_beli' => $stok->harga_beli_k,
+                            'harga_jual' => $item->harga_jual,
+                            'diskon' => $item->diskon * ($jumlahKeluar / $item->jumlah),
+                            'subtotal' => ($jumlahKeluar * $item->harga_jual) - ($item->diskon * ($jumlahKeluar / $item->jumlah)),
+                            'stok_id' => null,
+                        ]);
+                        if (!$simpanRinciFifo) {
+                            throw new \Exception('Rincian Obat gagal disimpan');
+                        }
+                        $detaiPengurangan[] = [
+                            'stok' => $stok,
+                            'simpanRinciFifo' => $simpanRinciFifo,
+                            'jumlahKeluar' => $jumlahKeluar,
+                        ];
                     }
                 } else {
                     $stok = stok::where('kdbarang', $item->kodebarang)->orderBy('id', 'desc')->first();
@@ -289,7 +308,9 @@ class PenjualanController extends Controller
             DB::commit();
             return new JsonResponse([
                 'message' => 'Data Pembayaran Sudah di catat',
-                'data' => $data
+                'data' => $data,
+                'detaiPengurangan' => $detaiPengurangan,
+
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
