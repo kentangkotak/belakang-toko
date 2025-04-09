@@ -185,6 +185,41 @@ class PenjualanController extends Controller
         $data['meta'] = collect($raw)->except('data');
         return new JsonResponse($data);
     }
+    public function getListPenjualanNull()
+    {
+        $raw = HeaderPenjualan::with([
+            'pelanggan',
+            'detailFifo.masterBarang',
+            'detail' => function ($q) {
+                $q->with([
+                    'masterBarang' => function ($x) {
+                        $x->with([
+                            'stok' => function ($q) {
+                                $q->select(
+                                    'kdbarang',
+                                    DB::raw('sum(jumlah_b) as jumlah_b'),
+                                    DB::raw('sum(jumlah_k) as jumlah_k'),
+                                    'isi',
+                                    'satuan_b',
+                                    'satuan_k',
+                                    'harga_beli_b',
+                                    'harga_beli_k',
+                                )
+                                    ->groupBy('kdbarang')
+                                    ->where('jumlah_k', '>', 0);
+                            },
+                        ]);
+                    }
+                ]);
+            },
+            'sales',
+        ])
+            ->where('no_penjualan', 'like', '%' . request('q') . '%')
+            ->whereNull('flag')
+            ->orderBy('id', 'desc')
+            ->get();
+        return new JsonResponse($raw);
+    }
     public function hapusDetail(Request $request)
     {
         $detail = DetailPenjualan::find($request->id);

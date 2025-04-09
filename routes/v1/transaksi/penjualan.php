@@ -16,4 +16,5 @@ Route::group([
     Route::post('/simpan-pembayaran', [PenjualanController::class, 'simpanPembayaran']);
     // list penjualan
     Route::get('/list', [PenjualanController::class, 'getListPenjualan']);
+    Route::get('/list-null', [PenjualanController::class, 'getListPenjualanNull']);
 });
