@@ -152,7 +152,28 @@ class PenjualanController extends Controller
         $raw = HeaderPenjualan::with([
             'pelanggan',
             'detailFifo.masterBarang',
-            'detail.masterBarang',
+            'detail' => function ($q) {
+                $q->with([
+                    'masterBarang' => function ($x) {
+                        $x->with([
+                            'stok' => function ($q) {
+                                $q->select(
+                                    'kdbarang',
+                                    DB::raw('sum(jumlah_b) as jumlah_b'),
+                                    DB::raw('sum(jumlah_k) as jumlah_k'),
+                                    'isi',
+                                    'satuan_b',
+                                    'satuan_k',
+                                    'harga_beli_b',
+                                    'harga_beli_k',
+                                )
+                                    ->groupBy('kdbarang')
+                                    ->where('jumlah_k', '>', 0);
+                            },
+                        ]);
+                    }
+                ]);
+            },
             'sales',
         ])
             ->where('no_penjualan', 'like', '%' . request('q') . '%')
