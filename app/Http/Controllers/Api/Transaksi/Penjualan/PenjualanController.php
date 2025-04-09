@@ -209,31 +209,69 @@ class PenjualanController extends Controller
 
             // update Stok
             foreach ($detail as $item) {
-                $stok = collect($stoks)->where('kdbarang', $item->kodebarang);
-                $jumlahKeluar = $item->jumlah;
-                foreach ($stok as $stokItem) {
-                    if ($jumlahKeluar <= 0) break;
-                    $sisa = $stokItem->jumlah_k;
+                if (sizeof($stoks) > 0) {
+                    $stok = collect($stoks)->where('kdbarang', $item->kodebarang);
+                    $jumlahKeluar = $item->jumlah;
+                    foreach ($stok as $stokItem) {
+                        if ($jumlahKeluar <= 0) break;
+                        $sisa = $stokItem->jumlah_k;
+                        if ($sisa >= $jumlahKeluar) {
+                            $pengurangan = min($jumlahKeluar, $sisa);
+                            $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
+                                'no_penjualan' => $request->no_penjualan,
+                                'kodebarang' => $item->kodebarang,
+                                'stok_id' => $stokItem->id,
+                            ], [
+                                'jumlah' => $pengurangan,
+                                'harga_beli' => $stokItem->harga_beli_k,
+                                'harga_jual' => $item->harga_jual,
+                                'diskon' => $item->diskon,
+                                'subtotal' => $item->subtotal,
+                            ]);
+                            if (!$simpanRinciFifo) {
+                                throw new \Exception('Rincian Obat gagal disimpan');
+                            }
+                            // Update jumlah stok pada item
+                            $stokItem->decrement('jumlah_k', $pengurangan); // Perbaikan: langsung update jumlah dalam satu langkah
+                            $jumlahKeluar -= $pengurangan; // Perbaikan: kurangi permintaan yang sudah terpenuhi
+                        } else {
 
-                    $pengurangan = min($jumlahKeluar, $sisa);
+                            $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
+                                'no_penjualan' => $request->no_penjualan,
+                                'kodebarang' => $item->kodebarang,
+                            ], [
+                                'jumlah' => $item->jumlah,
+                                'harga_beli' => $stokItem->harga_beli_k,
+                                'harga_jual' => $item->harga_jual,
+                                'diskon' => $item->diskon,
+                                'subtotal' => $item->subtotal,
+                                'stok_id' => null,
+                            ]);
+                            if (!$simpanRinciFifo) {
+                                throw new \Exception('Rincian Obat gagal disimpan');
+                            }
+                        }
+                    }
+                } else {
+                    $stok = stok::where('kdbarang', $item->kodebarang)->orderBy('id', 'desc')->first();
+                    if (!$stok) {
+                        throw new \Exception('Belum pernah ada stok untuk barang ini');
+                    }
+
                     $simpanRinciFifo = DetailPenjualanFifo::updateOrCreate([
                         'no_penjualan' => $request->no_penjualan,
                         'kodebarang' => $item->kodebarang,
-                        'stok_id' => $stokItem->id,
                     ], [
-                        'jumlah' => $pengurangan,
-                        'harga_beli' => $stokItem->harga_beli_k,
+                        'jumlah' => $item->jumlah,
+                        'harga_beli' => $stok->harga_beli_k,
                         'harga_jual' => $item->harga_jual,
                         'diskon' => $item->diskon,
                         'subtotal' => $item->subtotal,
+                        'stok_id' => null,
                     ]);
                     if (!$simpanRinciFifo) {
                         throw new \Exception('Rincian Obat gagal disimpan');
                     }
-                    // Update jumlah stok pada item
-                    $stokItem->decrement('jumlah_k', $pengurangan); // Perbaikan: langsung update jumlah dalam satu langkah
-                    $jumlahKeluar -= $pengurangan; // Perbaikan: kurangi permintaan yang sudah terpenuhi
-
                 }
                 // return new JsonResponse([
                 //     'message' => 'Percobaan',
