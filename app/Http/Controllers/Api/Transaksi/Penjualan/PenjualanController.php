@@ -216,7 +216,7 @@ class PenjualanController extends Controller
         ])
             ->where('no_penjualan', 'like', '%' . request('q') . '%')
             ->whereNull('flag')
-            ->orderBy('id', 'desc')
+            ->orderBy('id', 'asc')
             ->get();
         return new JsonResponse($raw);
     }
