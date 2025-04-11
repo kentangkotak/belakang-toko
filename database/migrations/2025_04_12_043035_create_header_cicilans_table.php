@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pembayaran_cicilans', function (Blueprint $table) {
+        Schema::create('header_cicilans', function (Blueprint $table) {
             $table->id();
-            $table->string('no_penjualan')->nullable();
             $table->string('no_pembayaran')->nullable();
+            $table->unsignedBigInteger('pelanggan_id')->nullable();
+            $table->unsignedBigInteger('sales_id')->nullable();
             $table->dateTime('tgl_bayar')->nullable();
             $table->double('jumlah', 24, 2)->default(0);
             $table->timestamps();
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pembayaran_cicilans');
+        Schema::dropIfExists('header_cicilans');
     }
 };

@@ -151,7 +151,19 @@ class PenjualanController extends Controller
     {
         $raw = HeaderPenjualan::with([
             'pelanggan',
-            'detailFifo.masterBarang',
+            // 'detailFifo.masterBarang',
+            'detailFifo' => function ($q) {
+                $q->select(
+                    'no_penjualan',
+                    'kodebarang',
+                    'harga_jual',
+                    DB::raw('sum(jumlah) as jumlah'),
+                    DB::raw('sum(subtotal) as subtotal'),
+                    DB::raw('sum(diskon) as diskon'),
+                )
+                    ->groupBy('kodebarang')
+                    ->with(['masterBarang']);
+            },
             'detail' => function ($q) {
                 $q->with([
                     'masterBarang' => function ($x) {
@@ -190,6 +202,7 @@ class PenjualanController extends Controller
         $raw = HeaderPenjualan::with([
             'pelanggan',
             'detailFifo.masterBarang',
+
             'detail' => function ($q) {
                 $q->with([
                     'masterBarang' => function ($x) {
@@ -354,12 +367,24 @@ class PenjualanController extends Controller
                 //     'stok' => $stok,
                 // ], 410);
             }
-            $data->load(
+            $data->load([
                 'detail.masterBarang',
-                'detailFifo.masterBarang',
+                // 'detailFifo.masterBarang',
+                'detailFifo' => function ($q) {
+                    $q->select(
+                        'no_penjualan',
+                        'kodebarang',
+                        'harga_jual',
+                        DB::raw('sum(jumlah) as jumlah'),
+                        DB::raw('sum(subtotal) as subtotal'),
+                        DB::raw('sum(diskon) as diskon'),
+                    )
+                        ->groupBy('kodebarang')
+                        ->with(['masterBarang']);
+                },
                 'sales',
                 'pelanggan'
-            );
+            ]);
 
             DB::commit();
             return new JsonResponse([
