@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('header_cicilans', function (Blueprint $table) {
             $table->id();
-            $table->string('no_pembayaran')->nullable();
             $table->unsignedBigInteger('pelanggan_id')->nullable();
             $table->unsignedBigInteger('sales_id')->nullable();
             $table->dateTime('tgl_bayar')->nullable();

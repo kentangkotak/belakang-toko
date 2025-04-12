@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pembayaran_cicilans', function (Blueprint $table) {
             $table->id();
             $table->string('no_penjualan')->nullable();
-            $table->string('no_pembayaran')->nullable();
+            $table->string('header_ciclan_id')->nullable();
             $table->dateTime('tgl_bayar')->nullable();
             $table->double('jumlah', 24, 2)->default(0);
             $table->timestamps();
